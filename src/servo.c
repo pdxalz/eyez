@@ -188,9 +188,9 @@ void servo_update()
         }
         else if (pattern[step] >= SEQ_SUB(0))
         {
-            __ASSERT(pattern[step] & 0xff00 < ARRAY_SIZE(list_sequences), "SEQ_SUB error");
+//            __ASSERT(pattern[step] & 0x00ff < ARRAY_SIZE(list_sequences), "SEQ_SUB error");
             ++stack;
-            __ASSERT(stack < CALL_DEPTH, "CALL_DEPTH error");
+ //           __ASSERT(stack < CALL_DEPTH, "CALL_DEPTH error");
             id = pattern[step] & 0x00ff;
             seq[stack].id = id;
             step = 0xFFFF;
@@ -212,6 +212,3 @@ void servo_update()
     pwm_set_pulse_dt(&servo3, p4);
 }
 
-static void next_step(void)
-{
-}

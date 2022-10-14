@@ -9,4 +9,6 @@ target_sources(app PRIVATE
     src/command.c
     src/led.c
     src/servo.c
+    src/chat_cli.c
+    src/model_handler.c
     )
