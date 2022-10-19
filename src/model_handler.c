@@ -202,6 +202,8 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 								struct bt_mesh_msg_ctx *ctx,
 								const uint8_t *msg)
 {
+	int n = atoi(msg);
+	start_sequence(n);
 	/* Don't print own messages. */
 	if (address_is_local(chat->model, ctx->addr))
 	{
@@ -209,8 +211,6 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 	}
 
 	shell_print(chat_shell, "<0x%04X>: %s", ctx->addr, msg);
-	int n = atoi(msg);
-	start_sequence(n);
 }
 
 static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
