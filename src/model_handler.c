@@ -17,7 +17,7 @@
 #include "model_handler.h"
 
 #include <zephyr/logging/log.h>
-#include "servo.h"
+#include "command.h"
 
 LOG_MODULE_DECLARE(chat);
 
@@ -202,8 +202,8 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 								struct bt_mesh_msg_ctx *ctx,
 								const uint8_t *msg)
 {
-	int n = atoi(msg);
-	start_sequence(n);
+	mesh_command(msg);
+
 	/* Don't print own messages. */
 	if (address_is_local(chat->model, ctx->addr))
 	{
@@ -451,8 +451,34 @@ static int cmd_chat(const struct shell *shell, size_t argc, char **argv)
 	return -EINVAL;
 }
 
+static int cmd_eyes(const struct shell *shell, size_t argc, char **argv)
+{
+	int err;
+
+	if (argc < 2)
+	{
+		return -EINVAL;
+	}
+
+	err = bt_mesh_chat_cli_message_send(&chat, argv[1]);
+	if (err)
+	{
+		LOG_WRN("Failed to send message: %d", err);
+	}
+
+	/* Print own messages in the chat. */
+	shell_print(shell, "<you>: %s", argv[1]);
+
+	return 0;
+}
+
+
 SHELL_CMD_ARG_REGISTER(chat, &chat_cmds, "Bluetooth Mesh Chat Client commands",
 					   cmd_chat, 1, 1);
+
+
+SHELL_CMD_ARG_REGISTER(z, NULL, "Eyes",
+					   cmd_eyes, 1, 1);
 
 /******************************************************************************/
 /******************************** Public API **********************************/

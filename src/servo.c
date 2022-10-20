@@ -33,17 +33,21 @@ uint16_t seq1[] = {505, 1515, 2525, 3535, 4545, 5555, 5656, 5757, 5858, 5959,
                    6969, 7979, 8888, 9797, 9696, 9595, 9494, 8383, 7272, 6161, 5050,
                    5051, 5052, 5053, 5054, 5055, 5056, 5057, 5058, 5059, 5057, 5055, 5053, 5051, SEQ_END};
 
+uint16_t seqCenter[] = {5555, SEQ_END};
 uint16_t seqRL[] = {505, 1515, 2525, 3535, 4545, 5555, 6565, 7575, 8585, 9595, SEQ_END};
 uint16_t seqLR[] = {9595, 8585, 7575, 6565, 5555, 4545, 3535, 2525, 1515, 505, SEQ_END};
-uint16_t seqLRoll[] = {505, 1616, 2727, 3838, 4949, 5959, 6868, 7777, 8686, 9595, SEQ_END};
-uint16_t seqRRoll[] = {9595, 8686, 7777, 6868, 5959, 4949, 3838, 2727, 1616, 505, SEQ_END};
+uint16_t seqDL[] = {505, 1616, 2727, 3838, 4949, 5959, 6868, 7777, 8686, 9595, SEQ_END};
+uint16_t seqDR[] = {9595, 8686, 7777, 6868, 5959, 4949, 3838, 2727, 1616, 505, SEQ_END};
+uint16_t seqUncross[] = {4555, 3565, 2575, 1585,  595,  595, 595, 595, 595, 1585, 2575, 3565, 4555, 5555, SEQ_END};
+uint16_t seqCross[] = {5545, 6535, 7525, 8515, 9505, 9505, 9505, 9505, 8515, 7525, 6535, 5545, 5555, SEQ_END};
+uint16_t seqDemo[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4),  SEQ_SUB(5), SEQ_SUB(6),  SEQ_SUB(0), SEQ_END};
 uint16_t seqWonkey[] = {9595, 8695, 7795, 6895, 5995, 4995, 3895, 2795, 1695, 595,
                         495, 1395, 2295, 3195, 4095, 5095, 6195, 7295, 8395, 9495, 9595, SEQ_END};
 uint16_t seqSuffle[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(2), SEQ_END};
 uint16_t seqSuffleRoll[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(1), SEQ_SUB(2), SEQ_END};
 uint16_t seqWonkeyRoll[] = {SEQ_SUB(2), SEQ_SUB(6), SEQ_SUB(1), SEQ_END};
 
-uint16_t *list_sequences[] = {seq1, seqLR, seqRL, seqRRoll, seqLRoll, seqRRoll, seqWonkey, seqSuffle, seqSuffleRoll, seqWonkeyRoll};
+uint16_t *list_sequences[] = {seqCenter, seqLR, seqRL, seqDR, seqDL, seqUncross, seqCross, seqDemo, seqWonkey, seqSuffle, seqSuffleRoll, seqWonkeyRoll};
 
 uint32_t pulse_width = min_pulse;
 enum direction dir = UP;

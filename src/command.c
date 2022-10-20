@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "string.h"
 
-const struct shell *chat_shell;
+const struct shell *eyez_shell;
 static enum WhichEye current_eye = Eye_both;
 
 static int cmd_lighta(const struct shell *shell, size_t argc, char *argv[])
@@ -48,13 +48,12 @@ static int cmd_eye_position(const struct shell *shell, size_t argc, char **argv)
         // shell returns 1 when help is printed
         return 1;
     }
-   	position = atoi(argv[1]);
+    position = atoi(argv[1]);
 
     eye_position(current_eye, position);
 
     cmd_print("eye postion %s", argv[1]);
     return 0;
-
 }
 
 static int cmd_eye_sequence(const struct shell *shell, size_t argc, char **argv)
@@ -69,7 +68,6 @@ static int cmd_eye_sequence(const struct shell *shell, size_t argc, char **argv)
     start_sequence(n);
     cmd_print("eye sequence %s", argv[1]);
     return 0;
-
 }
 
 static int cmd_led_colors(const struct shell *shell, size_t argc, char **argv)
@@ -92,6 +90,23 @@ SHELL_CMD_ARG_REGISTER(l, NULL, "led", cmd_led_colors, 1, 1);
 
 void command_init()
 {
-    chat_shell = shell_backend_uart_get_ptr();
-    shell_use_colors_set(chat_shell, 0);
+    eyez_shell = shell_backend_uart_get_ptr();
+    shell_use_colors_set(eyez_shell, 0);
+}
+
+void mesh_command(const uint8_t *msg)
+{
+    switch (msg[0])
+    {
+    case 'c':
+        set_color_string(&msg[1]);
+        break;
+
+    case 'e':
+    {
+        int n = atoi(&msg[1]);
+        start_sequence(n);
+    }
+    break;
+    }
 }
