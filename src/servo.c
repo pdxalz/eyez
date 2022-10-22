@@ -62,6 +62,7 @@ int stack;
 
 int32_t servo_timeout;
 
+static bool update_linear_move();
 
 void start_sequence(int sequence)
 {
@@ -136,8 +137,9 @@ void eye_position(enum WhichEye eye, uint8_t pos)
 
 void servo_update()
 {
-    update_linear_move();
-/*
+    if (update_linear_move())
+        return;
+
     uint32_t p1;
     uint32_t p2;
     uint32_t p3;
@@ -189,7 +191,7 @@ void servo_update()
     pwm_set_pulse_dt(&servo1, p2);
     pwm_set_pulse_dt(&servo2, p3);
     pwm_set_pulse_dt(&servo3, p4);
-    */
+    
 }
 //********************* Linear Move *******************************
 struct coord {
@@ -218,7 +220,7 @@ static int16_t interpolate(int16_t a, int16_t b)
    return (a + (b-a) * pos.step / pos.num_steps); 
 }
 
-void update_linear_move()
+static bool update_linear_move()
 {
     uint32_t p1;
     uint32_t p2;
@@ -226,7 +228,7 @@ void update_linear_move()
     uint32_t p4;
 
     if (pos.step >= pos.num_steps)
-        return;
+        return false;
     
     ++pos.step;
     int16_t x = interpolate(pos.x0, pos.x1);
@@ -241,6 +243,7 @@ void update_linear_move()
     pwm_set_pulse_dt(&servo1, p2);
     pwm_set_pulse_dt(&servo2, p3);
     pwm_set_pulse_dt(&servo3, p4);
+    return true;
 }
 //*****************************************************************
 void servo_init()
