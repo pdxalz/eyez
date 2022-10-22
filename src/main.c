@@ -72,7 +72,7 @@ void main(void)
 	led_init();
 	servo_init();
 	eye_position(Eye_both, 5);
-	cmd_print(">>> Shell Initialized <<<");
+//	cmd_print(">>> Shell Initialized <<<");
 
 	err = bt_enable(bt_ready);
 	if (err) {

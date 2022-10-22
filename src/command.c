@@ -36,7 +36,7 @@ static int cmd_eye_select(const struct shell *shell, size_t argc, char **argv)
         // shell returns 1 when help is printed
         return 1;
     }
-    cmd_print("eye select %s", argv[1]);
+//    cmd_print("eye select %s", argv[1]);
     return 0;
 }
 
@@ -53,7 +53,7 @@ static int cmd_eye_position(const struct shell *shell, size_t argc, char **argv)
 
     eye_position(current_eye, position);
 
-    cmd_print("eye postion %s", argv[1]);
+//    cmd_print("eye postion %s", argv[1]);
     return 0;
 }
 
@@ -67,7 +67,7 @@ static int cmd_eye_sequence(const struct shell *shell, size_t argc, char **argv)
     }
     int n = atoi(argv[1]);
     start_sequence(n);
-    cmd_print("eye sequence %s", argv[1]);
+//    cmd_print("eye sequence %s", argv[1]);
     return 0;
 }
 
@@ -80,7 +80,7 @@ static int cmd_led_colors(const struct shell *shell, size_t argc, char **argv)
         return 1;
     }
 
-    cmd_print("LED sequence %s", argv[1]);
+//    cmd_print("LED sequence %s", argv[1]);
     return 0;
 }
 
@@ -126,5 +126,22 @@ void mesh_command(const uint8_t *msg)
         move_linear(x,y,steps);
     }
     break;
+
+    case 'a':
+    {
+        int x,y,steps;
+        const char * p;
+
+        p = &msg[1];
+        x=atoi(p);
+        p=strchr(p,',');
+        if (p==NULL) return;
+        y=atoi(++p);
+        p=strchr(p,',');
+        steps = (p==NULL) ? 0 : atoi(++p);
+
+        move_arc(x,y,steps);
+    }
+    break;    
     }
 }
