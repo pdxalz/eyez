@@ -123,7 +123,24 @@ void mesh_command(const uint8_t *msg)
         p=strchr(p,',');
         steps = (p==NULL) ? 0 : atoi(++p);
 
-        move_linear(x,y,steps);
+        move_linear(x,y,x,y,steps);
+    }
+    break;
+
+    case 'n':
+    {
+        int x,y,steps;
+        const char * p;
+
+        p = &msg[1];
+        x=atoi(p);
+        p=strchr(p,',');
+        if (p==NULL) return;
+        y=atoi(++p);
+        p=strchr(p,',');
+        steps = (p==NULL) ? 0 : atoi(++p);
+
+        move_linear(x,y,90-x,90-y,steps);
     }
     break;
 
@@ -140,8 +157,25 @@ void mesh_command(const uint8_t *msg)
         p=strchr(p,',');
         steps = (p==NULL) ? 0 : atoi(++p);
 
-        move_arc(x,y,steps);
+        move_arc(x,y,x,y,steps);
     }
-    break;    
+    break;   
+
+    case 'b':
+    {
+        int x,y,steps;
+        const char * p;
+
+        p = &msg[1];
+        x=atoi(p);
+        p=strchr(p,',');
+        if (p==NULL) return;
+        y=atoi(++p);
+        p=strchr(p,',');
+        steps = (p==NULL) ? 0 : atoi(++p);
+
+        move_arc(x,y,90-x,90-y,steps);
+    }
+    break;        
     }
 }

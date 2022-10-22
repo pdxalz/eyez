@@ -1002,3 +1002,6 @@ build_bt5032/zephyr/subsys/settings/src/cmake_install.cmake
 build_bt5032/zephyr/subsys/storage/flash_map/cmake_install.cmake
 .vscode/settings.json
 sample.yaml
+build_bt5032/zephyr/lib/libc/newlib/CMakeFiles/lib__libc__newlib.dir/libc-hooks.c.obj
+build_bt5032/zephyr/lib/libc/newlib/liblib__libc__newlib.a
+build_bt5032/zephyr/lib/libc/newlib/cmake_install.cmake

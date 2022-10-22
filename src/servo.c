@@ -5,7 +5,7 @@
 #include <zephyr/drivers/spi.h>
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/sys/util.h>
-#include <math.h> 
+#include <math.h>
 #include "servo.h"
 
 static const struct pwm_dt_spec servo0 = PWM_DT_SPEC_GET(DT_NODELABEL(servo0));
@@ -38,9 +38,9 @@ uint16_t seqRL[] = {505, 1515, 2525, 3535, 4545, 5555, 6565, 7575, 8585, 9595, S
 uint16_t seqLR[] = {9595, 8585, 7575, 6565, 5555, 4545, 3535, 2525, 1515, 505, SEQ_END};
 uint16_t seqDL[] = {505, 1616, 2727, 3838, 4949, 5959, 6868, 7777, 8686, 9595, SEQ_END};
 uint16_t seqDR[] = {9595, 8686, 7777, 6868, 5959, 4949, 3838, 2727, 1616, 505, SEQ_END};
-uint16_t seqUncross[] = {4555, 3565, 2575, 1585,  595,  595, 595, 595, 595, 1585, 2575, 3565, 4555, 5555, SEQ_END};
+uint16_t seqUncross[] = {4555, 3565, 2575, 1585, 595, 595, 595, 595, 595, 1585, 2575, 3565, 4555, 5555, SEQ_END};
 uint16_t seqCross[] = {5545, 6535, 7525, 8515, 9505, 9505, 9505, 9505, 8515, 7525, 6535, 5545, 5555, SEQ_END};
-uint16_t seqDemo[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4),  SEQ_SUB(5), SEQ_SUB(6),  SEQ_SUB(0), SEQ_END};
+uint16_t seqDemo[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(5), SEQ_SUB(6), SEQ_SUB(0), SEQ_END};
 uint16_t seqWonkey[] = {9595, 8695, 7795, 6895, 5995, 4995, 3895, 2795, 1695, 595,
                         495, 1395, 2295, 3195, 4095, 5095, 6195, 7295, 8395, 9495, 9595, SEQ_END};
 uint16_t seqSuffle[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(2), SEQ_END};
@@ -170,9 +170,9 @@ void servo_update()
         }
         else if (pattern[step] >= SEQ_SUB(0))
         {
-//            __ASSERT(pattern[step] & 0x00ff < ARRAY_SIZE(list_sequences), "SEQ_SUB error");
+            //            __ASSERT(pattern[step] & 0x00ff < ARRAY_SIZE(list_sequences), "SEQ_SUB error");
             ++stack;
- //           __ASSERT(stack < CALL_DEPTH, "CALL_DEPTH error");
+            //           __ASSERT(stack < CALL_DEPTH, "CALL_DEPTH error");
             id = pattern[step] & 0x00ff;
             seq[stack].id = id;
             step = 0xFFFF;
@@ -181,8 +181,6 @@ void servo_update()
         }
         seq[stack].step = ++step;
     }
-
-
 
     p1 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] % 10);
     p2 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 10 % 10);
@@ -195,54 +193,83 @@ void servo_update()
     pwm_set_pulse_dt(&servo1, p2);
     pwm_set_pulse_dt(&servo2, p3);
     pwm_set_pulse_dt(&servo3, p4);
-    
 }
 int16_t default_steps;
 
-
 //********************* Arc Move *******************************
-struct polar_coord {
-    float  r0;
-    float  a0;
-    float  r1;
-    float  a1;
-    int16_t  step;
-    int16_t  num_steps;
+struct polar_coord
+{
+    float rA0;
+    float aA0;
+    float rA1;
+    float aA1;
+
+    float rB0;
+    float aB0;
+    float rB1;
+    float aB1;
+
+    int16_t step;
+    int16_t num_steps;
 } arcpos;
 
 static float finterpolate(float a, float b)
 {
-   return (a + (b-a) * arcpos.step / arcpos.num_steps); 
+    return (a + (b - a) * arcpos.step / arcpos.num_steps);
 }
 
 #define PI 3.14159
-void move_arc(int16_t xi, int16_t yi, int16_t steps)
+void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
 {
-    arcpos.r0 = arcpos.r1;
-    arcpos.a0 = arcpos.a1;
+    arcpos.rA0 = arcpos.rA1;
+    arcpos.aA0 = arcpos.aA1;
 
-printk("movearc %d %d\n", xi, yi);
-    float x= (xi-50)*2;
-    float y= (yi-50)*2;
-    arcpos.r1 = sqrt(x*x + y*y);
-    if (x!=0.0)
+    arcpos.rB0 = arcpos.rB1;
+    arcpos.aB0 = arcpos.aB1;
+
+    printk("movearc %d %d\n", xAi, yAi);
+
+    float x = (xAi - 50) * 2;
+    float y = (yAi - 50) * 2;
+    arcpos.rA1 = sqrt(x * x + y * y);
+    if (x != 0.0)
     {
-        arcpos.a1 = atan(y/x);
+        arcpos.aA1 = atan(y / x);
     }
     else
     {
-        arcpos.a1 = (y>0) ? PI/2.0 : -PI/2.0;
+        arcpos.aA1 = (y > 0) ? PI / 2.0 : -PI / 2.0;
     }
-    if (x<0)
+    if (x < 0)
     {
-        arcpos.a1 += PI;
+        arcpos.aA1 += PI;
     }
     //  no rotation > 180 degrees
-    if (fabs(arcpos.a1 - arcpos.a0) > PI)
-        arcpos.a1 += (arcpos.a1<arcpos.a0) ? PI*2 : -PI*2;
+    if (fabs(arcpos.aA1 - arcpos.aA0) > PI)
+        arcpos.aA1 += (arcpos.aA1 < arcpos.aA0) ? PI * 2 : -PI * 2;
+
+     x = (xBi - 50) * 2;
+     y = (yBi - 50) * 2;
+    arcpos.rB1 = sqrt(x * x + y * y);
+    if (x != 0.0)
+    {
+        arcpos.aB1 = atan(y / x);
+    }
+    else
+    {
+        arcpos.aB1 = (y > 0) ? PI / 2.0 : -PI / 2.0;
+    }
+    if (x < 0)
+    {
+        arcpos.aB1 += PI;
+    }
+    //  no rotation > 180 degrees
+    if (fabs(arcpos.aB1 - arcpos.aB0) > PI)
+        arcpos.aB1 += (arcpos.aB1 < arcpos.aB0) ? PI * 2 : -PI * 2;
 
 
-printk("      %d %d\n", (int)arcpos.r1, (int)(arcpos.a1*180./3.14159));
+
+    printk("      %d %d\n", (int)arcpos.rB1, (int)(arcpos.aB1 * 180. / 3.14159));
 
     arcpos.num_steps = (steps == 0) ? default_steps : steps;
     arcpos.step = 0;
@@ -259,19 +286,28 @@ static bool update_arc_move()
 
     if (arcpos.step >= arcpos.num_steps)
         return false;
-    
+
     ++arcpos.step;
-    float r = finterpolate(arcpos.r0, arcpos.r1);
-    float a = finterpolate(arcpos.a0, arcpos.a1);
+    float r = finterpolate(arcpos.rA0, arcpos.rA1);
+    float a = finterpolate(arcpos.aA0, arcpos.aA1);
 
     x = (int)(r * cos(a) / 2.0 + 50);
     y = (int)(r * sin(a) / 2.0 + 50);
 
-printk("arc %d %d\n", x, y);
-    p1 = max_pulse - (max_pulse - min_pulse) * x / 100 ;
-    p2 = max_pulse - (max_pulse - min_pulse) * y / 100 ;
-    p3 = max_pulse - (max_pulse - min_pulse) * x / 100 ;
-    p4 = max_pulse - (max_pulse - min_pulse) * y / 100 ;
+    printk("arc %d %d\n", x, y);
+    p1 = max_pulse - (max_pulse - min_pulse) * x / 100;
+    p2 = max_pulse - (max_pulse - min_pulse) * y / 100;
+    
+
+    r = finterpolate(arcpos.rB0, arcpos.rB1);
+    a = finterpolate(arcpos.aB0, arcpos.aB1);
+
+    x = (int)(r * cos(a) / 2.0 + 50);
+    y = (int)(r * sin(a) / 2.0 + 50);
+
+
+    p3 = max_pulse - (max_pulse - min_pulse) * x / 100;
+    p4 = max_pulse - (max_pulse - min_pulse) * y / 100;
 
     pwm_set_pulse_dt(&servo0, p1);
     pwm_set_pulse_dt(&servo1, p2);
@@ -281,27 +317,37 @@ printk("arc %d %d\n", x, y);
 }
 
 //********************* Linear Move *******************************
-struct coord {
-    int16_t  x0;
-    int16_t  y0;
-    int16_t  x1;
-    int16_t  y1;
-    int16_t  step;
-    int16_t  num_steps;
+struct coord
+{
+    int16_t xA0;
+    int16_t yA0;
+    int16_t xA1;
+    int16_t yA1;
+    int16_t xB0;
+    int16_t yB0;
+    int16_t xB1;
+    int16_t yB1;
+    int16_t step;
+    int16_t num_steps;
 } pos;
 
 static int16_t interpolate(int16_t a, int16_t b)
 {
-   return (a + (b-a) * pos.step / pos.num_steps); 
+    return (a + (b - a) * pos.step / pos.num_steps);
 }
 
-
-void move_linear(int16_t x, int16_t y, int16_t steps)
+void move_linear(int16_t xA, int16_t yA, int16_t xB, int16_t yB, int16_t steps)
 {
-    pos.x0 = pos.x1;
-    pos.y0 = pos.y1;
-    pos.x1 = x;
-    pos.y1 = y;
+    pos.xA0 = pos.xA1;
+    pos.yA0 = pos.yA1;
+    pos.xA1 = xA;
+    pos.yA1 = yA;
+
+    pos.xB0 = pos.xB1;
+    pos.yB0 = pos.yB1;
+    pos.xB1 = xB;
+    pos.yB1 = yB;
+
     pos.num_steps = (steps == 0) ? default_steps : steps;
     pos.step = 0;
 }
@@ -315,15 +361,18 @@ static bool update_linear_move()
 
     if (pos.step >= pos.num_steps)
         return false;
-    
-    ++pos.step;
-    int16_t x = interpolate(pos.x0, pos.x1);
-    int16_t y = interpolate(pos.y0, pos.y1);
 
-    p1 = max_pulse - (max_pulse - min_pulse) * x / 100 ;
-    p2 = max_pulse - (max_pulse - min_pulse) * y / 100 ;
-    p3 = max_pulse - (max_pulse - min_pulse) * x / 100 ;
-    p4 = max_pulse - (max_pulse - min_pulse) * y / 100 ;
+    ++pos.step;
+    int16_t xA = interpolate(pos.xA0, pos.xA1);
+    int16_t yA = interpolate(pos.yA0, pos.yA1);
+
+    int16_t xB = interpolate(pos.xB0, pos.xB1);
+    int16_t yB = interpolate(pos.yB0, pos.yB1);
+
+    p1 = max_pulse - (max_pulse - min_pulse) * xA / 100;
+    p2 = max_pulse - (max_pulse - min_pulse) * yA / 100;
+    p3 = max_pulse - (max_pulse - min_pulse) * xB / 100;
+    p4 = max_pulse - (max_pulse - min_pulse) * yB / 100;
 
     pwm_set_pulse_dt(&servo0, p1);
     pwm_set_pulse_dt(&servo1, p2);
@@ -337,10 +386,14 @@ void servo_init()
     stack = -1;
     servo_timeout = 150;
 
-    arcpos.r1 = 0.0;
-    arcpos.a1 = 0.0;
-    pos.x1 = 50;
-    pos.y1 = 50;
+    arcpos.rA1 = 0.0;
+    arcpos.aA1 = 0.0;
+    arcpos.rB1 = 0.0;
+    arcpos.aB1 = 0.0;
+    pos.xA1 = 50;
+    pos.yA1 = 50;
+    pos.xB1 = 50;
+    pos.yB1 = 50;
     default_steps = 10;
     pos.num_steps = default_steps;
     pos.step = default_steps;
