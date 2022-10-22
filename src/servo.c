@@ -62,35 +62,6 @@ int stack;
 
 int32_t servo_timeout;
 
-void servo_init()
-{
-    stack = -1;
-    servo_timeout = 150;
-
-    if (!device_is_ready(servo0.dev))
-    {
-        printk("Error: PWM device %s is not ready\n", servo0.dev->name);
-        return;
-    }
-
-    if (!device_is_ready(servo1.dev))
-    {
-        printk("Error: PWM device %s is not ready\n", servo1.dev->name);
-        return;
-    }
-
-    if (!device_is_ready(servo2.dev))
-    {
-        printk("Error: PWM device %s is not ready\n", servo2.dev->name);
-        return;
-    }
-
-    if (!device_is_ready(servo3.dev))
-    {
-        printk("Error: PWM device %s is not ready\n", servo3.dev->name);
-        return;
-    }
-}
 
 void start_sequence(int sequence)
 {
@@ -165,11 +136,12 @@ void eye_position(enum WhichEye eye, uint8_t pos)
 
 void servo_update()
 {
+    update_linear_move();
+/*
     uint32_t p1;
     uint32_t p2;
     uint32_t p3;
     uint32_t p4;
-
     if (stack < 0)
         return;
 
@@ -203,6 +175,9 @@ void servo_update()
         }
         seq[stack].step = ++step;
     }
+
+
+
     p1 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] % 10);
     p2 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 10 % 10);
     p3 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 100 % 10);
@@ -214,5 +189,92 @@ void servo_update()
     pwm_set_pulse_dt(&servo1, p2);
     pwm_set_pulse_dt(&servo2, p3);
     pwm_set_pulse_dt(&servo3, p4);
+    */
+}
+//********************* Linear Move *******************************
+struct coord {
+    int16_t  x0;
+    int16_t  y0;
+    int16_t  x1;
+    int16_t  y1;
+    int16_t  step;
+    int16_t  num_steps;
+} pos;
+
+int16_t default_steps;
+
+void move_linear(int16_t x, int16_t y, int16_t steps)
+{
+    pos.x0 = pos.x1;
+    pos.y0 = pos.y1;
+    pos.x1 = x;
+    pos.y1 = y;
+    pos.num_steps = (steps == 0) ? default_steps : steps;
+    pos.step = 0;
 }
 
+static int16_t interpolate(int16_t a, int16_t b)
+{
+   return (a + (b-a) * pos.step / pos.num_steps); 
+}
+
+void update_linear_move()
+{
+    uint32_t p1;
+    uint32_t p2;
+    uint32_t p3;
+    uint32_t p4;
+
+    if (pos.step >= pos.num_steps)
+        return;
+    
+    ++pos.step;
+    int16_t x = interpolate(pos.x0, pos.x1);
+    int16_t y = interpolate(pos.y0, pos.y1);
+
+    p1 = max_pulse - (max_pulse - min_pulse) * x / 100 ;
+    p2 = max_pulse - (max_pulse - min_pulse) * y / 100 ;
+    p3 = max_pulse - (max_pulse - min_pulse) * x / 100 ;
+    p4 = max_pulse - (max_pulse - min_pulse) * y / 100 ;
+
+    pwm_set_pulse_dt(&servo0, p1);
+    pwm_set_pulse_dt(&servo1, p2);
+    pwm_set_pulse_dt(&servo2, p3);
+    pwm_set_pulse_dt(&servo3, p4);
+}
+//*****************************************************************
+void servo_init()
+{
+    stack = -1;
+    servo_timeout = 150;
+
+    pos.x0 = 0;
+    pos.y0 = 0;
+    default_steps = 10;
+    pos.num_steps = default_steps;
+    pos.step = default_steps;
+
+    if (!device_is_ready(servo0.dev))
+    {
+        printk("Error: PWM device %s is not ready\n", servo0.dev->name);
+        return;
+    }
+
+    if (!device_is_ready(servo1.dev))
+    {
+        printk("Error: PWM device %s is not ready\n", servo1.dev->name);
+        return;
+    }
+
+    if (!device_is_ready(servo2.dev))
+    {
+        printk("Error: PWM device %s is not ready\n", servo2.dev->name);
+        return;
+    }
+
+    if (!device_is_ready(servo3.dev))
+    {
+        printk("Error: PWM device %s is not ready\n", servo3.dev->name);
+        return;
+    }
+}

@@ -1,31 +1,32 @@
 #include <zephyr/zephyr.h>
 #include "servo.h"
+#include "led.h"
 #include "command.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "string.h"
+#include <string.h>
 
 const struct shell *eyez_shell;
 static enum WhichEye current_eye = Eye_both;
 
-static int cmd_lighta(const struct shell *shell, size_t argc, char *argv[])
-{
-    cmd_print(">>> x light <<<");
+// static int cmd_lighta(const struct shell *shell, size_t argc, char *argv[])
+// {
+//     cmd_print(">>> x light <<<");
 
-    return 0;
-}
+//     return 0;
+// }
 
-static int cmd_lightb(const struct shell *shell, size_t argc, char *argv[])
-{
-    cmd_print(">>> y light <<<");
+// static int cmd_lightb(const struct shell *shell, size_t argc, char *argv[])
+// {
+//     cmd_print(">>> y light <<<");
 
-    return 0;
-}
+//     return 0;
+// }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(light_cmds,
-                               SHELL_CMD_ARG(x, NULL, "Print client status", cmd_lighta, 1, 0),
-                               SHELL_CMD_ARG(y, NULL, "Send a text message to the chat <message>", cmd_lightb, 1, 0),
-                               SHELL_SUBCMD_SET_END);
+// SHELL_STATIC_SUBCMD_SET_CREATE(light_cmds,
+//                                SHELL_CMD_ARG(x, NULL, "Print client status", cmd_lighta, 1, 0),
+//                                SHELL_CMD_ARG(y, NULL, "Send a text message to the chat <message>", cmd_lightb, 1, 0),
+//                                SHELL_SUBCMD_SET_END);
 
 static int cmd_eye_select(const struct shell *shell, size_t argc, char **argv)
 {
@@ -106,6 +107,23 @@ void mesh_command(const uint8_t *msg)
     {
         int n = atoi(&msg[1]);
         start_sequence(n);
+    }
+    break;
+
+    case 'm':
+    {
+        int x,y,steps;
+        const char * p;
+
+        p = &msg[1];
+        x=atoi(p);
+        p=strchr(p,',');
+        if (p==NULL) return;
+        y=atoi(++p);
+        p=strchr(p,',');
+        steps = (p==NULL) ? 0 : atoi(++p);
+
+        move_linear(x,y,steps);
     }
     break;
     }
