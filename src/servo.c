@@ -27,6 +27,8 @@ enum direction
 #define CALL_DEPTH 4
 #define SEQ_END 0xffff
 #define SEQ_SUB(X) (0xff00 | X)
+#define SEQ_DLY(X) (0xfe00 | X)
+#define SEQ_SPD(X) (0xfd00 | X)
 #define SEQ_MOV(X) (10000 + (X % 10000))
 #define SEQ_ARC(X) (20000 + (X % 10000))
 #define LAST_MOVE_COMMAND 29999
@@ -36,14 +38,12 @@ uint16_t seq1[] = {505, 1515, 2525, 3535, 4545, 5555, 5656, 5757, 5858, 5959,
                    5051, 5052, 5053, 5054, 5055, 5056, 5057, 5058, 5059, 5057, 5055, 5053, 5051, SEQ_END};
 
 uint16_t seqCenter[] = {5555, SEQ_END};
-// uint16_t seqRL[] = {505, 1515, 2525, 3535, 4545, 5555, 6565, 7575, 8585, 9595, SEQ_END};
+uint16_t seqLR[] = {SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555), SEQ_END};
 uint16_t seqRL[] = {SEQ_MOV(9999), SEQ_MOV(1919), SEQ_MOV(1111), SEQ_MOV(9191), SEQ_MOV(5555), SEQ_END};
-//uint16_t seqLR[] = {9595, 8585, 7575, 6565, 5555, 4545, 3535, 2525, 1515, 505, SEQ_END};
-uint16_t seqLR[] = {SEQ_ARC(9999), SEQ_ARC(1919), SEQ_ARC(1111), SEQ_ARC(9191), SEQ_ARC(5555), SEQ_END};
-uint16_t seqDL[] = {505, 1616, 2727, 3838, 4949, 5959, 6868, 7777, 8686, 9595, SEQ_END};
-uint16_t seqDR[] = {9595, 8686, 7777, 6868, 5959, 4949, 3838, 2727, 1616, 505, SEQ_END};
-uint16_t seqUncross[] = {4555, 3565, 2575, 1585, 595, 595, 595, 595, 595, 1585, 2575, 3565, 4555, 5555, SEQ_END};
-uint16_t seqCross[] = {5545, 6535, 7525, 8515, 9505, 9505, 9505, 9505, 8515, 7525, 6535, 5545, 5555, SEQ_END};
+uint16_t seqDR[] = {SEQ_ARC(1595), SEQ_ARC(5951), SEQ_ARC(9515), SEQ_ARC(5159), SEQ_ARC(1595), SEQ_ARC(5555), SEQ_END};
+uint16_t seqDL[] = {SEQ_MOV(5159), SEQ_MOV(5951), SEQ_MOV(5159), SEQ_MOV(5951), SEQ_MOV(5555), SEQ_DLY(50), SEQ_END};
+uint16_t seqUncross[] = {SEQ_MOV(9191), SEQ_MOV(1515), SEQ_MOV(9999), SEQ_MOV(1515), SEQ_DLY(50), SEQ_END};
+uint16_t seqCross[] = {SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(4), SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(20), SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(10), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_END};
 uint16_t seqDemo[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(5), SEQ_SUB(6), SEQ_SUB(0), SEQ_END};
 uint16_t seqWonkey[] = {9595, 8695, 7795, 6895, 5995, 4995, 3895, 2795, 1695, 595,
                         495, 1395, 2295, 3195, 4095, 5095, 6195, 7295, 8395, 9495, 9595, SEQ_END};
@@ -65,6 +65,7 @@ static struct
 int stack;
 
 int32_t servo_timeout;
+int16_t default_steps;
 
 static bool update_linear_move();
 static bool update_arc_move();
@@ -183,6 +184,16 @@ void servo_update()
             seq[stack].step = step;
             pattern = list_sequences[id];
         }
+        else if (pattern[step] >= SEQ_DLY(0))
+        {
+            id = pattern[step] & 0x00ff;
+            k_msleep(id * 100);
+        }
+        else if (pattern[step] >= SEQ_SPD(0))
+        {
+            id = pattern[step] & 0x00ff;
+            default_steps = id;
+        }
         seq[stack].step = ++step;
     }
 
@@ -199,9 +210,9 @@ void servo_update()
     if (pattern[step] < 30000 && pattern[step] >= 20000)
     {
         move_arc(((pattern[step] % 10) - 1) * 12,
-                    ((pattern[step] / 10 % 10) - 1) * 12,
-                    ((pattern[step] / 100 % 10) - 1) * 12,
-                    ((pattern[step] / 1000 % 10) - 1) * 12, 0);
+                 ((pattern[step] / 10 % 10) - 1) * 12,
+                 ((pattern[step] / 100 % 10) - 1) * 12,
+                 ((pattern[step] / 1000 % 10) - 1) * 12, 0);
         seq[stack].step = ++step;
         return;
     }
@@ -218,7 +229,6 @@ void servo_update()
     pwm_set_pulse_dt(&servo2, p3);
     pwm_set_pulse_dt(&servo3, p4);
 }
-int16_t default_steps;
 
 //********************* Arc Move *******************************
 struct polar_coord
