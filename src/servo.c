@@ -27,15 +27,19 @@ enum direction
 #define CALL_DEPTH 4
 #define SEQ_END 0xffff
 #define SEQ_SUB(X) (0xff00 | X)
-#define LAST_MOVE_COMMAND 9999
+#define SEQ_MOV(X) (10000 + (X % 10000))
+#define SEQ_ARC(X) (20000 + (X % 10000))
+#define LAST_MOVE_COMMAND 29999
 
 uint16_t seq1[] = {505, 1515, 2525, 3535, 4545, 5555, 5656, 5757, 5858, 5959,
                    6969, 7979, 8888, 9797, 9696, 9595, 9494, 8383, 7272, 6161, 5050,
                    5051, 5052, 5053, 5054, 5055, 5056, 5057, 5058, 5059, 5057, 5055, 5053, 5051, SEQ_END};
 
 uint16_t seqCenter[] = {5555, SEQ_END};
-uint16_t seqRL[] = {505, 1515, 2525, 3535, 4545, 5555, 6565, 7575, 8585, 9595, SEQ_END};
-uint16_t seqLR[] = {9595, 8585, 7575, 6565, 5555, 4545, 3535, 2525, 1515, 505, SEQ_END};
+// uint16_t seqRL[] = {505, 1515, 2525, 3535, 4545, 5555, 6565, 7575, 8585, 9595, SEQ_END};
+uint16_t seqRL[] = {SEQ_MOV(9999), SEQ_MOV(1919), SEQ_MOV(1111), SEQ_MOV(9191), SEQ_MOV(5555), SEQ_END};
+//uint16_t seqLR[] = {9595, 8585, 7575, 6565, 5555, 4545, 3535, 2525, 1515, 505, SEQ_END};
+uint16_t seqLR[] = {SEQ_ARC(9999), SEQ_ARC(1919), SEQ_ARC(1111), SEQ_ARC(9191), SEQ_ARC(5555), SEQ_END};
 uint16_t seqDL[] = {505, 1616, 2727, 3838, 4949, 5959, 6868, 7777, 8686, 9595, SEQ_END};
 uint16_t seqDR[] = {9595, 8686, 7777, 6868, 5959, 4949, 3838, 2727, 1616, 505, SEQ_END};
 uint16_t seqUncross[] = {4555, 3565, 2575, 1585, 595, 595, 595, 595, 595, 1585, 2575, 3565, 4555, 5555, SEQ_END};
@@ -182,6 +186,26 @@ void servo_update()
         seq[stack].step = ++step;
     }
 
+    if (pattern[step] < 20000 && pattern[step] >= 10000)
+    {
+        move_linear(((pattern[step] % 10) - 1) * 12,
+                    ((pattern[step] / 10 % 10) - 1) * 12,
+                    ((pattern[step] / 100 % 10) - 1) * 12,
+                    ((pattern[step] / 1000 % 10) - 1) * 12, 0);
+        seq[stack].step = ++step;
+        return;
+    }
+
+    if (pattern[step] < 30000 && pattern[step] >= 20000)
+    {
+        move_arc(((pattern[step] % 10) - 1) * 12,
+                    ((pattern[step] / 10 % 10) - 1) * 12,
+                    ((pattern[step] / 100 % 10) - 1) * 12,
+                    ((pattern[step] / 1000 % 10) - 1) * 12, 0);
+        seq[stack].step = ++step;
+        return;
+    }
+
     p1 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] % 10);
     p2 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 10 % 10);
     p3 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 100 % 10);
@@ -248,8 +272,8 @@ void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
     if (fabs(arcpos.aA1 - arcpos.aA0) > PI)
         arcpos.aA1 += (arcpos.aA1 < arcpos.aA0) ? PI * 2 : -PI * 2;
 
-     x = (xBi - 50) * 2;
-     y = (yBi - 50) * 2;
+    x = (xBi - 50) * 2;
+    y = (yBi - 50) * 2;
     arcpos.rB1 = sqrt(x * x + y * y);
     if (x != 0.0)
     {
@@ -266,8 +290,6 @@ void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
     //  no rotation > 180 degrees
     if (fabs(arcpos.aB1 - arcpos.aB0) > PI)
         arcpos.aB1 += (arcpos.aB1 < arcpos.aB0) ? PI * 2 : -PI * 2;
-
-
 
     printk("      %d %d\n", (int)arcpos.rB1, (int)(arcpos.aB1 * 180. / 3.14159));
 
@@ -297,14 +319,12 @@ static bool update_arc_move()
     printk("arc %d %d\n", x, y);
     p1 = max_pulse - (max_pulse - min_pulse) * x / 100;
     p2 = max_pulse - (max_pulse - min_pulse) * y / 100;
-    
 
     r = finterpolate(arcpos.rB0, arcpos.rB1);
     a = finterpolate(arcpos.aB0, arcpos.aB1);
 
     x = (int)(r * cos(a) / 2.0 + 50);
     y = (int)(r * sin(a) / 2.0 + 50);
-
 
     p3 = max_pulse - (max_pulse - min_pulse) * x / 100;
     p4 = max_pulse - (max_pulse - min_pulse) * y / 100;
@@ -338,6 +358,8 @@ static int16_t interpolate(int16_t a, int16_t b)
 
 void move_linear(int16_t xA, int16_t yA, int16_t xB, int16_t yB, int16_t steps)
 {
+    printk("move %d %d %d %d\n", xA, yA, xB, yB);
+
     pos.xA0 = pos.xA1;
     pos.yA0 = pos.yA1;
     pos.xA1 = xA;
