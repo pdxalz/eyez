@@ -7,6 +7,7 @@
 #include <zephyr/sys/util.h>
 #include <math.h>
 #include "servo.h"
+#include "led.h"
 
 static const struct pwm_dt_spec servo0 = PWM_DT_SPEC_GET(DT_NODELABEL(servo0));
 static const struct pwm_dt_spec servo1 = PWM_DT_SPEC_GET(DT_NODELABEL(servo1));
@@ -26,9 +27,12 @@ enum direction
 
 #define CALL_DEPTH 4
 #define SEQ_END 0xffff
+#define SEQ_LOOP 0xfffe
+#define SEQ_NXTCLR 0xfffd
 #define SEQ_SUB(X) (0xff00 | X)
 #define SEQ_DLY(X) (0xfe00 | X)
 #define SEQ_SPD(X) (0xfd00 | X)
+#define SEQ_CLR(X) (0xfc00 | X)
 #define SEQ_MOV(X) (10000 + (X % 10000))
 #define SEQ_ARC(X) (20000 + (X % 10000))
 #define LAST_MOVE_COMMAND 29999
@@ -38,20 +42,22 @@ uint16_t seq1[] = {505, 1515, 2525, 3535, 4545, 5555, 5656, 5757, 5858, 5959,
                    5051, 5052, 5053, 5054, 5055, 5056, 5057, 5058, 5059, 5057, 5055, 5053, 5051, SEQ_END};
 
 uint16_t seqCenter[] = {5555, SEQ_END};
-uint16_t seqLR[] = {SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555), SEQ_END};
-uint16_t seqRL[] = {SEQ_MOV(9999), SEQ_MOV(1919), SEQ_MOV(1111), SEQ_MOV(9191), SEQ_MOV(5555), SEQ_END};
-uint16_t seqDR[] = {SEQ_ARC(1595), SEQ_ARC(5951), SEQ_ARC(9515), SEQ_ARC(5159), SEQ_ARC(1595), SEQ_ARC(5555), SEQ_END};
-uint16_t seqDL[] = {SEQ_MOV(5159), SEQ_MOV(5951), SEQ_MOV(5159), SEQ_MOV(5951), SEQ_MOV(5555), SEQ_DLY(50), SEQ_END};
-uint16_t seqUncross[] = {SEQ_MOV(9191), SEQ_MOV(1515), SEQ_MOV(9999), SEQ_MOV(1515), SEQ_DLY(50), SEQ_END};
-uint16_t seqCross[] = {SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(4), SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(20), SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(10), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_END};
-uint16_t seqDemo[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(5), SEQ_SUB(6), SEQ_SUB(0), SEQ_END};
-uint16_t seqWonkey[] = {9595, 8695, 7795, 6895, 5995, 4995, 3895, 2795, 1695, 595,
-                        495, 1395, 2295, 3195, 4095, 5095, 6195, 7295, 8395, 9495, 9595, SEQ_END};
-uint16_t seqSuffle[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(2), SEQ_END};
+uint16_t seqRoll[] = {SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555), SEQ_END};
+uint16_t seqRL[] = {SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_END};
+uint16_t seqFunny[] = {SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), 
+SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), 
+SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555),  SEQ_LOOP};
+uint16_t seqCrss[] = {SEQ_MOV(5151), SEQ_MOV(5959),  SEQ_LOOP};
+uint16_t seqUncross[] = {SEQ_MOV(9191), SEQ_MOV(1515), SEQ_MOV(9999), SEQ_MOV(1515), SEQ_DLY(20), SEQ_END};
+uint16_t seqCross[] = {SEQ_SPD(6), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(10), 5555, SEQ_END};
+uint16_t seqColor[] = {SEQ_SPD(6), SEQ_SUB(5), SEQ_CLR(0), SEQ_SUB(5), SEQ_CLR(1), SEQ_SUB(5), SEQ_CLR(2), SEQ_SUB(5), SEQ_CLR(3), SEQ_SUB(5), SEQ_CLR(4), SEQ_SUB(5), SEQ_CLR(5), SEQ_SUB(5), SEQ_CLR(6), SEQ_SUB(5), SEQ_CLR(7), SEQ_SUB(5), SEQ_CLR(8), SEQ_SUB(5), SEQ_CLR(9), SEQ_SUB(5), SEQ_CLR(10), SEQ_SUB(5), SEQ_CLR(11), SEQ_SUB(5), SEQ_CLR(12), SEQ_SPD(10), 5555, SEQ_END};
+uint16_t seqDemo[] = {SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(0), SEQ_END};
+uint16_t seqWonkey[] = {SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_END};
+uint16_t seqSuffle[] = {SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_END};
 uint16_t seqSuffleRoll[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(1), SEQ_SUB(2), SEQ_END};
 uint16_t seqWonkeyRoll[] = {SEQ_SUB(2), SEQ_SUB(6), SEQ_SUB(1), SEQ_END};
 
-uint16_t *list_sequences[] = {seqCenter, seqLR, seqRL, seqDR, seqDL, seqUncross, seqCross, seqDemo, seqWonkey, seqSuffle, seqSuffleRoll, seqWonkeyRoll};
+uint16_t *list_sequences[] = {seqCenter, seqRoll, seqRL, seqFunny, seqCrss, seqUncross, seqCross, seqColor, seqDemo, seqWonkey, seqSuffle, seqSuffleRoll, seqWonkeyRoll};
 
 uint32_t pulse_width = min_pulse;
 enum direction dir = UP;
@@ -127,7 +133,7 @@ void eye_position(enum WhichEye eye, uint8_t pos)
         p2 = (max_pulse + min_pulse) / 2;
         break;
     }
-    printk("pos %d, %d\n", p1, p2);
+    //    printk("pos %d, %d\n", p1, p2);
 
     if (eye != Eye_right)
     {
@@ -164,17 +170,29 @@ void servo_update()
     {
         if (pattern[step] == SEQ_END)
         {
+            printk("end\n");
             --stack;
             if (stack < 0)
             {
                 return;
             }
-            id = seq[stack].id;
             step = seq[stack].step;
             pattern = list_sequences[id];
         }
+        else if (pattern[step] == SEQ_LOOP)
+        {
+            printk("loop\n");
+            step = 0xFFFF;
+            //                printk("loop\n");
+        }
+        else if (pattern[step] == SEQ_NXTCLR)
+        {
+            printk("next color\n");
+            next_color_pattern();
+        }
         else if (pattern[step] >= SEQ_SUB(0))
         {
+            printk("sub\n");
             //            __ASSERT(pattern[step] & 0x00ff < ARRAY_SIZE(list_sequences), "SEQ_SUB error");
             ++stack;
             //           __ASSERT(stack < CALL_DEPTH, "CALL_DEPTH error");
@@ -186,19 +204,29 @@ void servo_update()
         }
         else if (pattern[step] >= SEQ_DLY(0))
         {
+            printk("delay\n");
             id = pattern[step] & 0x00ff;
-            k_msleep(id * 100);
+//            k_msleep(id * 100);
         }
         else if (pattern[step] >= SEQ_SPD(0))
         {
+            printk("speed\n");
             id = pattern[step] & 0x00ff;
             default_steps = id;
+        }
+        else if (pattern[step] >= SEQ_CLR(0))
+        {
+            printk("color\n");
+            id = pattern[step] & 0x00ff;
+            set_color_pattern(id);
         }
         seq[stack].step = ++step;
     }
 
     if (pattern[step] < 20000 && pattern[step] >= 10000)
     {
+            printk("move\n");
+        
         move_linear(((pattern[step] % 10) - 1) * 12,
                     ((pattern[step] / 10 % 10) - 1) * 12,
                     ((pattern[step] / 100 % 10) - 1) * 12,
@@ -209,6 +237,7 @@ void servo_update()
 
     if (pattern[step] < 30000 && pattern[step] >= 20000)
     {
+            printk("arc\n");
         move_arc(((pattern[step] % 10) - 1) * 12,
                  ((pattern[step] / 10 % 10) - 1) * 12,
                  ((pattern[step] / 100 % 10) - 1) * 12,
@@ -216,6 +245,7 @@ void servo_update()
         seq[stack].step = ++step;
         return;
     }
+            printk("pwm set\n");
 
     p1 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] % 10);
     p2 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 10 % 10);
@@ -261,7 +291,7 @@ void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
     arcpos.rB0 = arcpos.rB1;
     arcpos.aB0 = arcpos.aB1;
 
-    printk("movearc %d %d\n", xAi, yAi);
+    //    printk("movearc %d %d\n", xAi, yAi);
 
     float x = (xAi - 50) * 2;
     float y = (yAi - 50) * 2;
@@ -301,7 +331,7 @@ void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
     if (fabs(arcpos.aB1 - arcpos.aB0) > PI)
         arcpos.aB1 += (arcpos.aB1 < arcpos.aB0) ? PI * 2 : -PI * 2;
 
-    printk("      %d %d\n", (int)arcpos.rB1, (int)(arcpos.aB1 * 180. / 3.14159));
+    //   printk("      %d %d\n", (int)arcpos.rB1, (int)(arcpos.aB1 * 180. / 3.14159));
 
     arcpos.num_steps = (steps == 0) ? default_steps : steps;
     arcpos.step = 0;
@@ -326,7 +356,7 @@ static bool update_arc_move()
     x = (int)(r * cos(a) / 2.0 + 50);
     y = (int)(r * sin(a) / 2.0 + 50);
 
-    printk("arc %d %d\n", x, y);
+    //   printk("arc %d %d\n", x, y);
     p1 = max_pulse - (max_pulse - min_pulse) * x / 100;
     p2 = max_pulse - (max_pulse - min_pulse) * y / 100;
 
@@ -368,7 +398,7 @@ static int16_t interpolate(int16_t a, int16_t b)
 
 void move_linear(int16_t xA, int16_t yA, int16_t xB, int16_t yB, int16_t steps)
 {
-    printk("move %d %d %d %d\n", xA, yA, xB, yB);
+    //   printk("move %d %d %d %d\n", xA, yA, xB, yB);
 
     pos.xA0 = pos.xA1;
     pos.yA0 = pos.yA1;
