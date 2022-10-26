@@ -9,6 +9,14 @@
 #include "servo.h"
 #include "led.h"
 
+#if 0 // printk info
+#define ZPR printk
+#else
+static void ZPR(char *fmt, ...)
+{
+}
+#endif
+
 static const struct pwm_dt_spec servo0 = PWM_DT_SPEC_GET(DT_NODELABEL(servo0));
 static const struct pwm_dt_spec servo1 = PWM_DT_SPEC_GET(DT_NODELABEL(servo1));
 static const struct pwm_dt_spec servo2 = PWM_DT_SPEC_GET(DT_NODELABEL(servo2));
@@ -60,7 +68,12 @@ uint16_t qRL[] = {SEQ_MOV(5151), SEQ_MOV(5555), SEQ_MOV(5959), SEQ_MOV(5555), SE
 uint16_t qRoll[] = {SEQ_MOV(5151), SEQ_ARC(9595), SEQ_ARC(5959), SEQ_MOV(5555), SEQ_END};
 uint16_t qRhythm[] = {SEQ_MOV(5151), SEQ_MOV(9595), SEQ_MOV(5959), SEQ_MOV(9595), SEQ_END};
 
-uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm};
+uint16_t lRL[] = {SEQ_NXTCLR, SEQ_SPD(10), SEQ_SUB(1), SEQ_SUB(1), SEQ_SUB(1), SEQ_END};
+uint16_t lRoll[] = {SEQ_NXTCLR, SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_END};
+uint16_t lRhythm[] = {SEQ_NXTCLR, SEQ_SUB(3), SEQ_SUB(3), SEQ_SUB(3), SEQ_END};
+
+uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm,
+                              lRL, lRoll, lRhythm};
 
 uint32_t pulse_width = min_pulse;
 enum direction dir = UP;
@@ -171,7 +184,7 @@ void eye_position(enum WhichEye eye, uint8_t pos)
         p2 = (max_pulse + min_pulse) / 2;
         break;
     }
-    //    printk("pos %d, %d\n", p1, p2);
+    //    ZPR("pos %d, %d\n", p1, p2);
 
     if (eye != Eye_right)
     {
@@ -208,32 +221,34 @@ void servo_update()
     {
         if (pattern[step] == SEQ_END)
         {
-            printk("end\n");
+            ZPR("end\n");
             --stack;
             if (stack < 0)
             {
+                stack = -1;
                 return;
             }
+            id = seq[stack].id;
             step = seq[stack].step;
             pattern = list_sequences[id];
         }
         else if (pattern[step] == SEQ_LOOP)
         {
-            printk("loop\n");
+            ZPR("loop\n");
             step = 0xFFFF;
-            //                printk("loop\n");
+            //                ZPR("loop\n");
         }
         else if (pattern[step] == SEQ_NXTCLR)
         {
-            printk("next color\n");
+            ZPR("next color\n");
             next_color_pattern();
         }
         else if (pattern[step] >= SEQ_SUB(0))
         {
-            printk("sub\n");
+            ZPR("sub\n");
             //            __ASSERT(pattern[step] & 0x00ff < ARRAY_SIZE(list_sequences), "SEQ_SUB error");
-            ++stack;
             //           __ASSERT(stack < CALL_DEPTH, "CALL_DEPTH error");
+            ++stack;
             id = pattern[step] & 0x00ff;
             seq[stack].id = id;
             step = 0xFFFF;
@@ -242,48 +257,47 @@ void servo_update()
         }
         else if (pattern[step] >= SEQ_DLY(0))
         {
-            printk("delay\n");
+            ZPR("delay\n");
             id = pattern[step] & 0x00ff;
             //            k_msleep(id * 100);
         }
         else if (pattern[step] >= SEQ_SPD(0))
         {
-            printk("speed\n");
+            ZPR("speed\n");
             id = pattern[step] & 0x00ff;
             default_steps = id;
         }
         else if (pattern[step] >= SEQ_CLR(0))
         {
-            printk("color\n");
+            ZPR("color\n");
             id = pattern[step] & 0x00ff;
             set_color_pattern(id);
         }
         seq[stack].step = ++step;
+        ZPR("# %d %d\n", id, step);
     }
 
     if (pattern[step] < 20000 && pattern[step] >= 10000)
     {
-        printk("move\n");
-
         move_linear(((pattern[step] % 10) - 1) * 12,
                     ((pattern[step] / 10 % 10) - 1) * 12,
                     ((pattern[step] / 100 % 10) - 1) * 12,
                     ((pattern[step] / 1000 % 10) - 1) * 12, 0);
         seq[stack].step = ++step;
+        ZPR("move %d %d\n", id, step);
         return;
     }
 
     if (pattern[step] < 30000 && pattern[step] >= 20000)
     {
-        printk("arc\n");
         move_arc(((pattern[step] % 10) - 1) * 12,
                  ((pattern[step] / 10 % 10) - 1) * 12,
                  ((pattern[step] / 100 % 10) - 1) * 12,
                  ((pattern[step] / 1000 % 10) - 1) * 12, 0);
         seq[stack].step = ++step;
+        ZPR("arc %d %d\n", id, step);
         return;
     }
-    printk("pwm set\n");
 
     p1 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] % 10);
     p2 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 10 % 10);
@@ -291,6 +305,7 @@ void servo_update()
     p4 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 1000 % 10);
 
     seq[stack].step = ++step;
+    ZPR("pwm %d %d\n", id, step);
 
     pwm_set_pulse_dt(&servo0, p1);
     pwm_set_pulse_dt(&servo1, p2);
@@ -333,8 +348,6 @@ static float polar_angle(int16_t xi, int16_t yi)
     return angle;
 }
 
-
-
 void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
 {
     arcpos.rA0 = polar_radius(xA_last_pos, yA_last_pos);
@@ -349,7 +362,7 @@ void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
     xB_last_pos = xBi;
     yB_last_pos = yBi;
 
-    //    printk("movearc %d %d\n", xAi, yAi);
+    //    ZPR("movearc %d %d\n", xAi, yAi);
 
     arcpos.rA1 = polar_radius(xAi, yAi);
     arcpos.aA1 = polar_angle(xAi, yAi);
@@ -365,7 +378,7 @@ void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
     if (fabs(arcpos.aB1 - arcpos.aB0) > PI)
         arcpos.aB1 += (arcpos.aB1 < arcpos.aB0) ? PI * 2 : -PI * 2;
 
-    //   printk("      %d %d\n", (int)arcpos.rB1, (int)(arcpos.aB1 * 180. / 3.14159));
+    //   ZPR("      %d %d\n", (int)arcpos.rB1, (int)(arcpos.aB1 * 180. / 3.14159));
 
     arcpos.num_steps = (steps == 0) ? default_steps : steps;
     arcpos.step = 0;
@@ -390,7 +403,7 @@ static bool update_arc_move()
     x = (int)(r * cos(a) / 2.0 + 50);
     y = (int)(r * sin(a) / 2.0 + 50);
 
-    //   printk("arc %d %d\n", x, y);
+    //   ZPR("arc %d %d\n", x, y);
     p1 = min_pulse + (max_pulse - min_pulse) * x / 100;
     p2 = min_pulse + (max_pulse - min_pulse) * y / 100;
 
@@ -419,7 +432,7 @@ static int16_t interpolate(int16_t a, int16_t b)
 
 void move_linear(int16_t xA, int16_t yA, int16_t xB, int16_t yB, int16_t steps)
 {
-    //   printk("move %d %d %d %d\n", xA, yA, xB, yB);
+    //   ZPR("move %d %d %d %d\n", xA, yA, xB, yB);
 
     pos.xA0 = xA_last_pos;
     pos.yA0 = yA_last_pos;
@@ -471,7 +484,7 @@ static bool update_linear_move()
 void servo_init()
 {
     stack = -1;
-    servo_timeout = 150;
+    servo_timeout = 30;
 
     arcpos.rA1 = 0.0;
     arcpos.aA1 = 0.0;
@@ -490,25 +503,25 @@ void servo_init()
 
     if (!device_is_ready(servo0.dev))
     {
-        printk("Error: PWM device %s is not ready\n", servo0.dev->name);
+        ZPR("Error: PWM device %s is not ready\n", servo0.dev->name);
         return;
     }
 
     if (!device_is_ready(servo1.dev))
     {
-        printk("Error: PWM device %s is not ready\n", servo1.dev->name);
+        ZPR("Error: PWM device %s is not ready\n", servo1.dev->name);
         return;
     }
 
     if (!device_is_ready(servo2.dev))
     {
-        printk("Error: PWM device %s is not ready\n", servo2.dev->name);
+        ZPR("Error: PWM device %s is not ready\n", servo2.dev->name);
         return;
     }
 
     if (!device_is_ready(servo3.dev))
     {
-        printk("Error: PWM device %s is not ready\n", servo3.dev->name);
+        ZPR("Error: PWM device %s is not ready\n", servo3.dev->name);
         return;
     }
 }
