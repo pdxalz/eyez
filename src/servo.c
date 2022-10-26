@@ -76,6 +76,41 @@ int stack;
 int32_t servo_timeout;
 int16_t default_steps;
 
+int16_t xA_last_pos;
+int16_t yA_last_pos;
+int16_t xB_last_pos;
+int16_t yB_last_pos;
+
+struct coord
+{
+    int16_t xA0;
+    int16_t yA0;
+    int16_t xA1;
+    int16_t yA1;
+    int16_t xB0;
+    int16_t yB0;
+    int16_t xB1;
+    int16_t yB1;
+    int16_t step;
+    int16_t num_steps;
+} pos;
+
+struct polar_coord
+{
+    float rA0;
+    float aA0;
+    float rA1;
+    float aA1;
+
+    float rB0;
+    float aB0;
+    float rB1;
+    float aB1;
+
+    int16_t step;
+    int16_t num_steps;
+} arcpos;
+
 static bool update_linear_move();
 static bool update_arc_move();
 
@@ -264,72 +299,68 @@ void servo_update()
 }
 
 //********************* Arc Move *******************************
-struct polar_coord
-{
-    float rA0;
-    float aA0;
-    float rA1;
-    float aA1;
-
-    float rB0;
-    float aB0;
-    float rB1;
-    float aB1;
-
-    int16_t step;
-    int16_t num_steps;
-} arcpos;
-
 static float finterpolate(float a, float b)
 {
     return (a + (b - a) * arcpos.step / arcpos.num_steps);
 }
 
-#define PI 3.14159
-void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
+static float polar_radius(int16_t xi, int16_t yi)
 {
-    arcpos.rA0 = arcpos.rA1;
-    arcpos.aA0 = arcpos.aA1;
+    float x = (xi - 50) * 2;
+    float y = (yi - 50) * 2;
+    return sqrt(x * x + y * y);
+}
 
-    arcpos.rB0 = arcpos.rB1;
-    arcpos.aB0 = arcpos.aB1;
+#define PI 3.14159
+static float polar_angle(int16_t xi, int16_t yi)
+{
+    float x = (xi - 50) * 2;
+    float y = (yi - 50) * 2;
+    float angle;
 
-    //    printk("movearc %d %d\n", xAi, yAi);
-
-    float x = (xAi - 50) * 2;
-    float y = (yAi - 50) * 2;
-    arcpos.rA1 = sqrt(x * x + y * y);
     if (x != 0.0)
     {
-        arcpos.aA1 = atan(y / x);
+        angle = atan(y / x);
     }
     else
     {
-        arcpos.aA1 = (y > 0) ? PI / 2.0 : -PI / 2.0;
+        angle = (y > 0) ? PI / 2.0 : -PI / 2.0;
     }
     if (x < 0)
     {
-        arcpos.aA1 += PI;
+        angle += PI;
     }
+    return angle;
+}
+
+
+
+void move_arc(int16_t xAi, int16_t yAi, int16_t xBi, int16_t yBi, int16_t steps)
+{
+    arcpos.rA0 = polar_radius(xA_last_pos, yA_last_pos);
+    arcpos.aA0 = polar_angle(xA_last_pos, yA_last_pos);
+
+    arcpos.rB0 = polar_radius(xB_last_pos, yB_last_pos);
+    arcpos.aB0 = polar_angle(xB_last_pos, yB_last_pos);
+
+    xA_last_pos = xAi;
+    yA_last_pos = yAi;
+
+    xB_last_pos = xBi;
+    yB_last_pos = yBi;
+
+    //    printk("movearc %d %d\n", xAi, yAi);
+
+    arcpos.rA1 = polar_radius(xAi, yAi);
+    arcpos.aA1 = polar_angle(xAi, yAi);
+
     //  no rotation > 180 degrees
     if (fabs(arcpos.aA1 - arcpos.aA0) > PI)
         arcpos.aA1 += (arcpos.aA1 < arcpos.aA0) ? PI * 2 : -PI * 2;
 
-    x = (xBi - 50) * 2;
-    y = (yBi - 50) * 2;
-    arcpos.rB1 = sqrt(x * x + y * y);
-    if (x != 0.0)
-    {
-        arcpos.aB1 = atan(y / x);
-    }
-    else
-    {
-        arcpos.aB1 = (y > 0) ? PI / 2.0 : -PI / 2.0;
-    }
-    if (x < 0)
-    {
-        arcpos.aB1 += PI;
-    }
+    arcpos.rB1 = polar_radius(xBi, yBi);
+    arcpos.aB1 = polar_angle(xBi, yBi);
+
     //  no rotation > 180 degrees
     if (fabs(arcpos.aB1 - arcpos.aB0) > PI)
         arcpos.aB1 += (arcpos.aB1 < arcpos.aB0) ? PI * 2 : -PI * 2;
@@ -360,8 +391,8 @@ static bool update_arc_move()
     y = (int)(r * sin(a) / 2.0 + 50);
 
     //   printk("arc %d %d\n", x, y);
-    p1 = max_pulse - (max_pulse - min_pulse) * x / 100;
-    p2 = max_pulse - (max_pulse - min_pulse) * y / 100;
+    p1 = min_pulse + (max_pulse - min_pulse) * x / 100;
+    p2 = min_pulse + (max_pulse - min_pulse) * y / 100;
 
     r = finterpolate(arcpos.rB0, arcpos.rB1);
     a = finterpolate(arcpos.aB0, arcpos.aB1);
@@ -369,8 +400,8 @@ static bool update_arc_move()
     x = (int)(r * cos(a) / 2.0 + 50);
     y = (int)(r * sin(a) / 2.0 + 50);
 
-    p3 = max_pulse - (max_pulse - min_pulse) * x / 100;
-    p4 = max_pulse - (max_pulse - min_pulse) * y / 100;
+    p3 = min_pulse + (max_pulse - min_pulse) * x / 100;
+    p4 = min_pulse + (max_pulse - min_pulse) * y / 100;
 
     pwm_set_pulse_dt(&servo0, p1);
     pwm_set_pulse_dt(&servo1, p2);
@@ -380,19 +411,6 @@ static bool update_arc_move()
 }
 
 //********************* Linear Move *******************************
-struct coord
-{
-    int16_t xA0;
-    int16_t yA0;
-    int16_t xA1;
-    int16_t yA1;
-    int16_t xB0;
-    int16_t yB0;
-    int16_t xB1;
-    int16_t yB1;
-    int16_t step;
-    int16_t num_steps;
-} pos;
 
 static int16_t interpolate(int16_t a, int16_t b)
 {
@@ -403,13 +421,17 @@ void move_linear(int16_t xA, int16_t yA, int16_t xB, int16_t yB, int16_t steps)
 {
     //   printk("move %d %d %d %d\n", xA, yA, xB, yB);
 
-    pos.xA0 = pos.xA1;
-    pos.yA0 = pos.yA1;
+    pos.xA0 = xA_last_pos;
+    pos.yA0 = yA_last_pos;
     pos.xA1 = xA;
     pos.yA1 = yA;
+    xA_last_pos = xA;
+    yA_last_pos = yA;
 
-    pos.xB0 = pos.xB1;
-    pos.yB0 = pos.yB1;
+    pos.xB0 = xB_last_pos;
+    pos.yB0 = yB_last_pos;
+    xB_last_pos = xB;
+    yB_last_pos = yB;
     pos.xB1 = xB;
     pos.yB1 = yB;
 
@@ -434,10 +456,10 @@ static bool update_linear_move()
     int16_t xB = interpolate(pos.xB0, pos.xB1);
     int16_t yB = interpolate(pos.yB0, pos.yB1);
 
-    p1 = max_pulse - (max_pulse - min_pulse) * xA / 100;
-    p2 = max_pulse - (max_pulse - min_pulse) * yA / 100;
-    p3 = max_pulse - (max_pulse - min_pulse) * xB / 100;
-    p4 = max_pulse - (max_pulse - min_pulse) * yB / 100;
+    p1 = min_pulse + (max_pulse - min_pulse) * xA / 100;
+    p2 = min_pulse + (max_pulse - min_pulse) * yA / 100;
+    p3 = min_pulse + (max_pulse - min_pulse) * xB / 100;
+    p4 = min_pulse + (max_pulse - min_pulse) * yB / 100;
 
     pwm_set_pulse_dt(&servo0, p1);
     pwm_set_pulse_dt(&servo1, p2);
@@ -455,6 +477,9 @@ void servo_init()
     arcpos.aA1 = 0.0;
     arcpos.rB1 = 0.0;
     arcpos.aB1 = 0.0;
+
+    xA_last_pos = 50;
+    yA_last_pos = 50;
     pos.xA1 = 50;
     pos.yA1 = 50;
     pos.xB1 = 50;
