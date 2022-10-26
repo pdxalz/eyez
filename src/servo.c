@@ -37,27 +37,30 @@ enum direction
 #define SEQ_ARC(X) (20000 + (X % 10000))
 #define LAST_MOVE_COMMAND 29999
 
-uint16_t seq1[] = {505, 1515, 2525, 3535, 4545, 5555, 5656, 5757, 5858, 5959,
-                   6969, 7979, 8888, 9797, 9696, 9595, 9494, 8383, 7272, 6161, 5050,
-                   5051, 5052, 5053, 5054, 5055, 5056, 5057, 5058, 5059, 5057, 5055, 5053, 5051, SEQ_END};
+// uint16_t seqCenter[] = {5555, SEQ_END};
+// uint16_t seqRoll[] = {SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555), SEQ_END};
+// uint16_t seqRL[] = {SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_END};
+// uint16_t seqFunny[] = {SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959),
+// SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959),
+// SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555),  SEQ_LOOP};
+// uint16_t seqCrss[] = {SEQ_MOV(5151), SEQ_MOV(5959),  SEQ_LOOP};
+// uint16_t seqUncross[] = {SEQ_MOV(9191), SEQ_MOV(1515), SEQ_MOV(9999), SEQ_MOV(1515), SEQ_DLY(20), SEQ_END};
+// uint16_t seqCross[] = {SEQ_SPD(6), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(10), 5555, SEQ_END};
+// uint16_t seqColor[] = {SEQ_SPD(6), SEQ_SUB(5), SEQ_CLR(0), SEQ_SUB(5), SEQ_CLR(1), SEQ_SUB(5), SEQ_CLR(2), SEQ_SUB(5), SEQ_CLR(3), SEQ_SUB(5), SEQ_CLR(4), SEQ_SUB(5), SEQ_CLR(5), SEQ_SUB(5), SEQ_CLR(6), SEQ_SUB(5), SEQ_CLR(7), SEQ_SUB(5), SEQ_CLR(8), SEQ_SUB(5), SEQ_CLR(9), SEQ_SUB(5), SEQ_CLR(10), SEQ_SUB(5), SEQ_CLR(11), SEQ_SUB(5), SEQ_CLR(12), SEQ_SPD(10), 5555, SEQ_END};
+// uint16_t seqDemo[] = {SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(0), SEQ_END};
+// uint16_t seqWonkey[] = {SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_END};
+// uint16_t seqSuffle[] = {SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_END};
+// uint16_t seqSuffleRoll[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(1), SEQ_SUB(2), SEQ_END};
+// uint16_t seqWonkeyRoll[] = {SEQ_SUB(2), SEQ_SUB(6), SEQ_SUB(1), SEQ_END};
 
-uint16_t seqCenter[] = {5555, SEQ_END};
-uint16_t seqRoll[] = {SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555), SEQ_END};
-uint16_t seqRL[] = {SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_END};
-uint16_t seqFunny[] = {SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), 
-SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), 
-SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555),  SEQ_LOOP};
-uint16_t seqCrss[] = {SEQ_MOV(5151), SEQ_MOV(5959),  SEQ_LOOP};
-uint16_t seqUncross[] = {SEQ_MOV(9191), SEQ_MOV(1515), SEQ_MOV(9999), SEQ_MOV(1515), SEQ_DLY(20), SEQ_END};
-uint16_t seqCross[] = {SEQ_SPD(6), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SUB(5), SEQ_SPD(10), 5555, SEQ_END};
-uint16_t seqColor[] = {SEQ_SPD(6), SEQ_SUB(5), SEQ_CLR(0), SEQ_SUB(5), SEQ_CLR(1), SEQ_SUB(5), SEQ_CLR(2), SEQ_SUB(5), SEQ_CLR(3), SEQ_SUB(5), SEQ_CLR(4), SEQ_SUB(5), SEQ_CLR(5), SEQ_SUB(5), SEQ_CLR(6), SEQ_SUB(5), SEQ_CLR(7), SEQ_SUB(5), SEQ_CLR(8), SEQ_SUB(5), SEQ_CLR(9), SEQ_SUB(5), SEQ_CLR(10), SEQ_SUB(5), SEQ_CLR(11), SEQ_SUB(5), SEQ_CLR(12), SEQ_SPD(10), 5555, SEQ_END};
-uint16_t seqDemo[] = {SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(1), SEQ_SUB(0), SEQ_END};
-uint16_t seqWonkey[] = {SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_SUB(8), SEQ_END};
-uint16_t seqSuffle[] = {SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_SUB(9), SEQ_END};
-uint16_t seqSuffleRoll[] = {SEQ_SUB(1), SEQ_SUB(2), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(3), SEQ_SUB(4), SEQ_SUB(1), SEQ_SUB(2), SEQ_END};
-uint16_t seqWonkeyRoll[] = {SEQ_SUB(2), SEQ_SUB(6), SEQ_SUB(1), SEQ_END};
+// uint16_t *list_sequences[] = {seqCenter, seqRoll, seqRL, seqFunny, seqCrss, seqUncross, seqCross, seqColor, seqDemo, seqWonkey, seqSuffle, seqSuffleRoll, seqWonkeyRoll};
 
-uint16_t *list_sequences[] = {seqCenter, seqRoll, seqRL, seqFunny, seqCrss, seqUncross, seqCross, seqColor, seqDemo, seqWonkey, seqSuffle, seqSuffleRoll, seqWonkeyRoll};
+uint16_t qCenter[] = {5555, SEQ_END};
+uint16_t qRL[] = {SEQ_MOV(5151), SEQ_MOV(5555), SEQ_MOV(5959), SEQ_MOV(5555), SEQ_END};
+uint16_t qRoll[] = {SEQ_MOV(5151), SEQ_ARC(9595), SEQ_ARC(5959), SEQ_MOV(5555), SEQ_END};
+uint16_t qRhythm[] = {SEQ_MOV(5151), SEQ_MOV(9595), SEQ_MOV(5959), SEQ_MOV(9595), SEQ_END};
+
+uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm};
 
 uint32_t pulse_width = min_pulse;
 enum direction dir = UP;
@@ -206,7 +209,7 @@ void servo_update()
         {
             printk("delay\n");
             id = pattern[step] & 0x00ff;
-//            k_msleep(id * 100);
+            //            k_msleep(id * 100);
         }
         else if (pattern[step] >= SEQ_SPD(0))
         {
@@ -225,8 +228,8 @@ void servo_update()
 
     if (pattern[step] < 20000 && pattern[step] >= 10000)
     {
-            printk("move\n");
-        
+        printk("move\n");
+
         move_linear(((pattern[step] % 10) - 1) * 12,
                     ((pattern[step] / 10 % 10) - 1) * 12,
                     ((pattern[step] / 100 % 10) - 1) * 12,
@@ -237,7 +240,7 @@ void servo_update()
 
     if (pattern[step] < 30000 && pattern[step] >= 20000)
     {
-            printk("arc\n");
+        printk("arc\n");
         move_arc(((pattern[step] % 10) - 1) * 12,
                  ((pattern[step] / 10 % 10) - 1) * 12,
                  ((pattern[step] / 100 % 10) - 1) * 12,
@@ -245,7 +248,7 @@ void servo_update()
         seq[stack].step = ++step;
         return;
     }
-            printk("pwm set\n");
+    printk("pwm set\n");
 
     p1 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] % 10);
     p2 = min_pulse + (max_pulse - min_pulse) / 9 * (pattern[step] / 10 % 10);
