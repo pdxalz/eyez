@@ -68,20 +68,20 @@ struct led_rgb color_table[] = {
 
 
 char * color_patterns[] = {
-    "ggyyyyyyyy",
-    "oobbgggggg",
-    "ccrroooooo",
-    "xxxxxxxxxx",
-    "zzzzzzzzzz",
-    "lluupppppp",
-    "hhjjjjjjjj",
-    "vvyyoooooo",
-    "rrmmmmmmmm",
-    "bbcccccccc",
-    "yyrroooooo",
-    "pppppppppp",
-    "aapppppppp",
-    "ssxxxxxxxx"
+    "ggyyyyyyyyg",
+    "oobbggggggb",
+    "ccrroooooog",
+    "xxxxxxxxxxb",
+    "zzzzzzzzzzg",
+    "lluuppppppb",
+    "hhjjjjjjjjg",
+    "vvyyoooooob",
+    "rrmmmmmmmmg",
+    "bbccccccccb",
+    "yyrroooooog",
+    "ppppppppppb",
+    "aappppppppg",
+    "ssxxxxxxxxb"
 };
 
 uint8_t color_index(char color)
@@ -115,13 +115,13 @@ void set_color_string(const uint8_t *str)
 
 void led_update()
 {
-    memset(&pixels, 0x00, sizeof(pixels));
+    // memset(&pixels, 0x00, sizeof(pixels));
 
-    ++count;
-    if (count % 100 == 1)
-        set_color_string("rrggbbccmm");
-    else if (count % 100 == 50)
-        set_color_string("ccmmyyrrggbb");
+    // ++count;
+    // if (count % 100 == 1)
+    //     set_color_string("rrggbbccmm");
+    // else if (count % 100 == 50)
+    //     set_color_string("ccmmyyrrggbb");
 
 }
 

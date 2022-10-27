@@ -70,7 +70,7 @@ uint16_t qRhythm[] = {SEQ_MOV(5151), SEQ_MOV(9595), SEQ_MOV(5959), SEQ_MOV(9595)
 
 uint16_t lRL[] = {SEQ_NXTCLR, SEQ_SPD(10), SEQ_SUB(1), SEQ_SUB(1), SEQ_SUB(1), SEQ_END};
 uint16_t lRoll[] = {SEQ_NXTCLR, SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_END};
-uint16_t lRhythm[] = {SEQ_NXTCLR, SEQ_SUB(3), SEQ_SUB(3), SEQ_SUB(3), SEQ_END};
+uint16_t lRhythm[] = {SEQ_NXTCLR, SEQ_SUB(3),SEQ_NXTCLR,  SEQ_SUB(3), SEQ_NXTCLR, SEQ_SUB(3), SEQ_LOOP};
 
 uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm,
                               lRL, lRoll, lRhythm};

@@ -34,7 +34,8 @@ LOG_MODULE_REGISTER(chat, CONFIG_LOG_DEFAULT_LEVEL);
 
 static void bt_ready(int err)
 {
-	if (err) {
+	if (err)
+	{
 		printk("Bluetooth init failed (err %d)\n", err);
 		return;
 	}
@@ -45,12 +46,14 @@ static void bt_ready(int err)
 	dk_buttons_init(NULL);
 
 	err = bt_mesh_init(bt_mesh_dk_prov_init(), model_handler_init());
-	if (err) {
+	if (err)
+	{
 		printk("Initializing mesh failed (err %d)\n", err);
 		return;
 	}
 
-	if (IS_ENABLED(CONFIG_SETTINGS)) {
+	if (IS_ENABLED(CONFIG_SETTINGS))
+	{
 		settings_load();
 	}
 
@@ -59,8 +62,6 @@ static void bt_ready(int err)
 
 	printk("Mesh initialized\n");
 }
-
-
 
 extern int32_t servo_timeout;
 
@@ -72,13 +73,14 @@ void main(void)
 	led_init();
 	servo_init();
 	eye_position(Eye_both, 5);
-//	cmd_print(">>> Shell Initialized <<<");
+	//	cmd_print(">>> Shell Initialized <<<");
 
 	err = bt_enable(bt_ready);
-	if (err) {
+	if (err)
+	{
 		printk("Bluetooth init failed (err %d)\n", err);
 	}
-	
+
 	while (1)
 	{
 		led_update();
