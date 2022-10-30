@@ -45,6 +45,7 @@ enum direction
 #define SEQ_ARC(X) (20000 + (X % 10000))
 #define LAST_MOVE_COMMAND 29999
 
+#define SPD_NORMAL SEQ_SPD(10)
 // uint16_t seqCenter[] = {5555, SEQ_END};
 // uint16_t seqRoll[] = {SEQ_ARC(1515), SEQ_ARC(5959), SEQ_ARC(9595), SEQ_ARC(5151), SEQ_ARC(1515), SEQ_ARC(5555), SEQ_END};
 // uint16_t seqRL[] = {SEQ_NXTCLR, SEQ_MOV(5151), SEQ_MOV(5959), SEQ_END};
@@ -62,19 +63,82 @@ enum direction
 // uint16_t seqWonkeyRoll[] = {SEQ_SUB(2), SEQ_SUB(6), SEQ_SUB(1), SEQ_END};
 
 // uint16_t *list_sequences[] = {seqCenter, seqRoll, seqRL, seqFunny, seqCrss, seqUncross, seqCross, seqColor, seqDemo, seqWonkey, seqSuffle, seqSuffleRoll, seqWonkeyRoll};
+#define CENTER 0
+#define RL 1
+#define ROLL 2
+#define RHYTHM 3
+#define DOWN 4
+#define CROSS 5
+#define WONKY 6
 
-uint16_t qCenter[] = {5555, SEQ_END};
+#define S_RL 11
+#define S_ROLL 12
+#define S_RHYTHM 13
+#define S_DOWN 14
+#define S_CROSS 15
+#define S_WONKY 16
+#define S_BIGSHOW 17
+
+uint16_t qCenter[] = {SEQ_MOV(5555), SEQ_END};
 uint16_t qRL[] = {SEQ_MOV(5151), SEQ_MOV(5555), SEQ_MOV(5959), SEQ_MOV(5555), SEQ_END};
-uint16_t qRoll[] = {SEQ_MOV(5151), SEQ_ARC(9595), SEQ_ARC(5959), SEQ_MOV(5555), SEQ_END};
+uint16_t qRoll[] = {SEQ_MOV(5151), SEQ_DLY(5), SEQ_ARC(9595), SEQ_ARC(5959), SEQ_DLY(5), SEQ_MOV(5555), SEQ_END};
 uint16_t qRhythm[] = {SEQ_MOV(5151), SEQ_MOV(9595), SEQ_MOV(5959), SEQ_MOV(9595), SEQ_END};
+uint16_t qSDown[] = {SEQ_MOV(1515), SEQ_ARC(5252), SEQ_ARC(1515), SEQ_ARC(5858), SEQ_ARC(1515), SEQ_END};
+uint16_t qCross[] = {SEQ_MOV(5159), SEQ_DLY(5), SEQ_MOV(5555), SEQ_MOV(5951), SEQ_DLY(5), SEQ_MOV(5555), SEQ_END};
+uint16_t qWonky[] = {SEQ_ARC(5559), SEQ_ARC(5595), SEQ_ARC(5551), SEQ_ARC(5515), SEQ_ARC(5559), SEQ_MOV(5555), SEQ_END};
+uint16_t qRight[] = {SEQ_MOV(1111), SEQ_END};
+uint16_t qDown[] = {SEQ_MOV(1515), SEQ_END};
+uint16_t qLeft[] = {SEQ_MOV(1919), SEQ_END};
 
-uint16_t lRL[] = {SEQ_NXTCLR, SEQ_SPD(10), SEQ_SUB(1), SEQ_SUB(1), SEQ_SUB(1), SEQ_END};
-uint16_t lRoll[] = {SEQ_NXTCLR, SEQ_SUB(2), SEQ_SUB(2), SEQ_SUB(2), SEQ_END};
-uint16_t lRhythm[] = {SEQ_NXTCLR, SEQ_SUB(3),SEQ_NXTCLR,  SEQ_SUB(3), SEQ_NXTCLR, SEQ_SUB(3), SEQ_LOOP};
+uint16_t s0[] = {SEQ_SPD(75), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s1[] = {SEQ_SPD(50), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s2[] = {SEQ_SPD(30), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s3[] = {SEQ_SPD(25), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s4[] = {SEQ_SPD(20), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s5[] = {SEQ_SPD(15), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s6[] = {SEQ_SPD(10), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s7[] = {SEQ_SPD(8), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s8[] = {SEQ_SPD(5), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t s9[] = {SEQ_SPD(20), SEQ_CLR(0), SEQ_SUB(RHYTHM), SEQ_CLR(1), SEQ_SUB(RHYTHM), SEQ_LOOP};
 
-uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm,
-                              lRL, lRoll, lRhythm};
+uint16_t home[] = {5555, SEQ_END};
+uint16_t lRL[] = {SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(RL), SEQ_END};
+uint16_t lRoll[] = {SEQ_NXTCLR, SEQ_SUB(ROLL), SEQ_SUB(ROLL), SEQ_SUB(ROLL), SEQ_END};
+uint16_t lRhythm[] = {SEQ_NXTCLR, SEQ_SUB(RHYTHM), SEQ_NXTCLR, SEQ_SUB(RHYTHM), SEQ_NXTCLR, SEQ_SUB(RHYTHM), SEQ_LOOP};
+uint16_t lDown[] = {SEQ_NXTCLR, SEQ_SUB(DOWN), SEQ_SUB(DOWN), SEQ_SUB(DOWN), SEQ_SUB(DOWN), SEQ_SUB(DOWN), SEQ_SUB(DOWN), SEQ_SUB(DOWN), SEQ_SUB(CENTER), SEQ_END};
+uint16_t lCross[] = {SEQ_NXTCLR, SEQ_SUB(CROSS), SEQ_SUB(CROSS), SEQ_SUB(CROSS), SEQ_END};
+uint16_t lWonky[] = {SEQ_NXTCLR, SEQ_SUB(CROSS), SEQ_SUB(CROSS), SEQ_SUB(WONKY), SEQ_END};
+uint16_t lShow1[] = {SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(ROLL),
+                     SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(ROLL),
+                     SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(CENTER), SEQ_DLY(10), SEQ_SUB(CROSS), SEQ_DLY(5),
+                     SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(ROLL),
+                     SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(ROLL),
+                     SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(RL), SEQ_SUB(CENTER), SEQ_DLY(10), SEQ_SUB(WONKY), SEQ_DLY(5),
+                     SEQ_LOOP};
+uint16_t lShow2[] = {SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(DOWN), SEQ_SUB(CENTER), SEQ_SUB(WONKY), SEQ_SUB(ROLL),
+                     SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(DOWN), SEQ_SUB(CENTER), SEQ_SUB(WONKY), SEQ_SUB(ROLL),
+                     SEQ_LOOP};
+uint16_t lKids[] = {SEQ_MOV(1515), SEQ_DLY(5), SEQ_MOV(1111), SEQ_DLY(5),
+                    SEQ_MOV(1515), SEQ_DLY(5), SEQ_MOV(1919), SEQ_DLY(5),
+                    SEQ_MOV(1515), SEQ_DLY(5), SEQ_END};
 
+uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm, qSDown, qCross, qWonky, qRight, qDown, qLeft,
+                              s0, s1, s2, s3, s4, s5, s6, s7, s8, s9,
+                              home, lRL, lRoll, lRhythm, lDown, lCross, lWonky, lShow1, lShow2, lKids};
+
+/*  Sequence list
+20 - home
+21 - Right to left
+22 - Roll
+23 - Rhythm
+24 - Roll down
+25 - Cross
+26 - Wonky
+27 - Show1
+28 - Show2
+
+
+*/
 uint32_t pulse_width = min_pulse;
 enum direction dir = UP;
 // static bool sequence = false;
@@ -259,7 +323,7 @@ void servo_update()
         {
             ZPR("delay\n");
             id = pattern[step] & 0x00ff;
-            //            k_msleep(id * 100);
+            k_msleep(id * 100);
         }
         else if (pattern[step] >= SEQ_SPD(0))
         {

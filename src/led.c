@@ -69,10 +69,9 @@ struct led_rgb color_table[] = {
 
 char * color_patterns[] = {
     "ggyyyyyyyyg",
-    "oobbggggggb",
     "ccrroooooog",
-    "xxxxxxxxxxb",
-    "zzzzzzzzzzg",
+    "oobbggggggb",
+    "bbggggggggg",
     "lluuppppppb",
     "hhjjjjjjjjg",
     "vvyyoooooob",
@@ -81,7 +80,7 @@ char * color_patterns[] = {
     "yyrroooooog",
     "ppppppppppb",
     "aappppppppg",
-    "ssxxxxxxxxb"
+    "rrabcdefghi",
 };
 
 uint8_t color_index(char color)
