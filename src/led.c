@@ -21,6 +21,7 @@ struct led_rgb pixels[STRIP_NUM_PIXELS];
 
 static const struct device *strip = DEVICE_DT_GET(STRIP_NODE);
 static long count = 0;
+static int current_pattern = 0;
 
 void led_init()
 {
@@ -34,8 +35,8 @@ void led_init()
         return;
     }
     printk("Displaying pattern on strip");
+    current_pattern = 0;
 }
-
 
 struct led_rgb color_table[] = {
     RGB(0x08, 0x0f, 0x0d), // a quamarine
@@ -66,8 +67,25 @@ struct led_rgb color_table[] = {
     RGB(0x0, 0x02, 0x0b),  // z affre
 };
 
+#if WHICH_HEAD == BIG_EYE
 
-char * color_patterns[] = {
+char *color_patterns[] = {
+    "ygcbmrmbcgy",
+    "gcbmryrmbcg",
+    "cbmrygyrmbc",
+    "bmrygcgyrmb",
+    "mrygcbcgyrm",
+    "rygcbmbcgyr",
+    "ooooooooooo",
+    "mmmmmmmmmmm",
+    "ccccccccccc",
+    "yyrrooorryy",
+    "ppppppppppp",
+    "aaaaaaaaaaa",
+    "rrabcdefghi",
+};
+#else
+char *color_patterns[] = {
     "ggyyyyyyyyg",
     "ccrroooooog",
     "oobbggggggb",
@@ -82,6 +100,7 @@ char * color_patterns[] = {
     "aappppppppg",
     "rrabcdefghi",
 };
+#endif
 
 uint8_t color_index(char color)
 {
@@ -121,13 +140,11 @@ void led_update()
     //     set_color_string("rrggbbccmm");
     // else if (count % 100 == 50)
     //     set_color_string("ccmmyyrrggbb");
-
 }
 
-static int current_pattern = 0;
 void set_color_pattern(int index)
 {
-    current_pattern = (index % ARRAY_SIZE(color_patterns) );
+    current_pattern = (index % ARRAY_SIZE(color_patterns));
     set_color_string(color_patterns[current_pattern]);
 }
 

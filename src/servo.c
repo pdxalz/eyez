@@ -9,7 +9,7 @@
 #include "servo.h"
 #include "led.h"
 
-#if 0 // printk info
+#if 1 // printk info
 #define ZPR printk
 #else
 static void ZPR(char *fmt, ...)
@@ -39,8 +39,10 @@ enum direction
 #define SEQ_NXTCLR 0xfffd
 #define SEQ_SUB(X) (0xff00 | X)
 #define SEQ_DLY(X) (0xfe00 | X)
-#define SEQ_SPD(X) (0xfd00 | X)
-#define SEQ_CLR(X) (0xfc00 | X)
+#define SEQ_DLYS(X) (0xfd00 | X)
+#define SEQ_DLYR(X) (0xfc00 | X)
+#define SEQ_SPD(X) (0xfb00 | X)
+#define SEQ_CLR(X) (0xfa00 | X)
 #define SEQ_MOV(X) (10000 + (X % 10000))
 #define SEQ_ARC(X) (20000 + (X % 10000))
 #define LAST_MOVE_COMMAND 29999
@@ -79,7 +81,7 @@ enum direction
 #define S_WONKY 16
 #define S_BIGSHOW 17
 
-uint16_t qCenter[] = {SEQ_MOV(5555), SEQ_END};
+uint16_t qCenter[] = {SEQ_CLR(1), SEQ_MOV(5555), SEQ_END};
 uint16_t qRL[] = {SEQ_MOV(5151), SEQ_MOV(5555), SEQ_MOV(5959), SEQ_MOV(5555), SEQ_END};
 uint16_t qRoll[] = {SEQ_MOV(5151), SEQ_DLY(5), SEQ_ARC(9595), SEQ_ARC(5959), SEQ_DLY(5), SEQ_MOV(5555), SEQ_END};
 uint16_t qRhythm[] = {SEQ_MOV(5151), SEQ_MOV(9595), SEQ_MOV(5959), SEQ_MOV(9595), SEQ_END};
@@ -121,10 +123,16 @@ uint16_t lShow2[] = {SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(DOWN), SEQ_SUB(CENTER), SE
 uint16_t lKids[] = {SEQ_MOV(1515), SEQ_DLY(5), SEQ_MOV(1111), SEQ_DLY(5),
                     SEQ_MOV(1515), SEQ_DLY(5), SEQ_MOV(1919), SEQ_DLY(5),
                     SEQ_MOV(1515), SEQ_DLY(5), SEQ_END};
+uint16_t lStagger[] = {SEQ_SPD(20),// SEQ_NXTCLR,
+ SEQ_MOV(5151), SEQ_DLY(4), SEQ_DLYS(7), SEQ_MOV(5959),
+                       SEQ_DLYR(14), SEQ_MOV(5151), SEQ_DLYS(7), SEQ_MOV(5555), SEQ_END};
+uint16_t lDark[] = {SEQ_SPD(20), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_DLY(4), SEQ_DLYS(7), SEQ_MOV(5959),
+                       SEQ_DLYR(14), SEQ_MOV(5151), SEQ_DLYS(7), SEQ_MOV(5555), SEQ_END};
 
 uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm, qSDown, qCross, qWonky, qRight, qDown, qLeft,
                               s0, s1, s2, s3, s4, s5, s6, s7, s8, s9,
-                              home, lRL, lRoll, lRhythm, lDown, lCross, lWonky, lShow1, lShow2, lKids};
+                              home, lRL, lRoll, lRhythm, lDown, lCross, lWonky, lShow1, lShow2, lKids,
+                              lStagger};
 
 /*  Sequence list
 20 - home
@@ -324,6 +332,18 @@ void servo_update()
             ZPR("delay\n");
             id = pattern[step] & 0x00ff;
             k_msleep(id * 100);
+        }
+        else if (pattern[step] >= SEQ_DLYS(0))
+        {
+            ZPR("delay stagger\n");
+            id = pattern[step] & 0x00ff;
+            k_msleep(id * 100 * WHICH_HEAD+100);
+        }
+        else if (pattern[step] >= SEQ_DLYR(0))
+        {
+            ZPR("delay rev stagger\n");
+            id = pattern[step] & 0x00ff;
+            k_msleep(id * 100 * REV_WHICH_HEAD);
         }
         else if (pattern[step] >= SEQ_SPD(0))
         {
