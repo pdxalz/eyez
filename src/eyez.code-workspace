@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"nrf-connect.topdir": "c:\\Users\\pdxal\\ncs\\v2.1.0",
+		"nrf-connect.toolchain.path": "c:\\Users\\pdxal\\ncs\\toolchains\\v2.1.0",
+		"nrf-connect.applications": [
+			"c:\\Nordic\\apps\\servo_motor"
+		]
+	}
+}
