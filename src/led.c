@@ -1,5 +1,5 @@
 #include <string.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/led_strip.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/device.h>
@@ -20,7 +20,7 @@
 struct led_rgb pixels[STRIP_NUM_PIXELS];
 
 static const struct device *strip = DEVICE_DT_GET(STRIP_NODE);
-static long count = 0;
+//z static long count = 0;
 static int current_pattern = 0;
 
 void led_init()
@@ -38,7 +38,7 @@ void led_init()
     current_pattern = 0;
 }
 
-struct led_rgb color_table[] = {
+const struct led_rgb color_table[] = {
     RGB(0x08, 0x0f, 0x0d), // a quamarine
     RGB(0x00, 0x00, 0x0f), // b
     RGB(0x00, 0x0f, 0x0f), // c
@@ -69,7 +69,7 @@ struct led_rgb color_table[] = {
 
 #if WHICH_HEAD == BIG_EYE
 
-char *color_patterns[] = {
+const char *color_patterns[] = {
     "ygcbmrmbcgy",
     "gcbmryrmbcg",
     "cbmrygyrmbc",

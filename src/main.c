@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/led_strip.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/device.h>
@@ -65,7 +65,7 @@ static void bt_ready(int err)
 
 extern int32_t servo_timeout;
 
-void main(void)
+int main(void)
 {
 	int err;
 
@@ -88,4 +88,5 @@ void main(void)
 
 		k_sleep(K_MSEC(servo_timeout));
 	}
+	return 0;
 }

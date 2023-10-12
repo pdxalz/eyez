@@ -1,4 +1,4 @@
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include "servo.h"
 #include "led.h"
 #include "command.h"

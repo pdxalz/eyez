@@ -2,13 +2,34 @@
 	"folders": [
 		{
 			"path": ".."
+		},
+		{
+			"name": "chat",
+			"path": "../../chat"
+		},
+		{
+			"name": "servo_motor",
+			"path": "../../servo_motor"
+		},
+		{
+			"name": "led_ws2812",
+			"path": "../../led_ws2812"
+		},
+		{
+			"name": "hello_world",
+			"path": "../../hello_world"
 		}
 	],
 	"settings": {
-		"nrf-connect.topdir": "c:\\Users\\pdxal\\ncs\\v2.1.0",
-		"nrf-connect.toolchain.path": "c:\\Users\\pdxal\\ncs\\toolchains\\v2.1.0",
-		"nrf-connect.applications": [
-			"c:\\Nordic\\apps\\servo_motor"
-		]
+		"nrf-connect.topdir": "${nrf-connect.sdk:2.2.0}",
+		"nrf-connect.toolchain.path": "${nrf-connect.toolchain:2.2.0}",
+		"nrf-connect.applications": [],
+		"files.associations": {
+			"kernel.h": "c",
+			"zephyr.h": "c",
+			"pwm.h": "c",
+			"device.h": "c",
+			"devicetree.h": "c"
+		}
 	}
 }

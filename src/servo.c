@@ -1,4 +1,4 @@
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/led_strip.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/device.h>
@@ -269,7 +269,27 @@ void eye_position(enum WhichEye eye, uint8_t pos)
         pwm_set_pulse_dt(&servo3, p2);
     }
 }
+/*
+float fabs(float a) 
+{
+    return a;
+}
 
+float sin(float a)
+{
+    return a;
+}
+
+float cos(float a)
+{
+    return a;
+}
+
+float atan(float a)
+{
+    return a;
+}
+*/
 void servo_update()
 {
     if (update_linear_move())
