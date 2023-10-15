@@ -32,6 +32,13 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(chat, CONFIG_LOG_DEFAULT_LEVEL);
 
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+
+#include <zephyr/drivers/i2c.h>
+
+const struct device *const sl_i2c1 = DEVICE_DT_GET(DT_ALIAS(person_sensor));
+
 static void bt_ready(int err)
 {
 	if (err)
@@ -69,6 +76,17 @@ int main(void)
 {
 	int err;
 
+	if (!device_is_ready(sl_i2c1))
+	{
+		printk("i2c devices not ready\n");
+		return 0;
+	}
+	printk("i2c read\n");
+
+	uint8_t data[4];
+
+	i2c_read(sl_i2c1, data, 4, 0x62);
+
 	command_init();
 	led_init();
 	servo_init();
@@ -86,6 +104,10 @@ int main(void)
 		led_update();
 		servo_update();
 
+		uint8_t data[4];
+
+		i2c_read(sl_i2c1, data, 4, 0x62);
+		printk("i2c %d %d %d %d\n", data[0],  data[1],  data[2],  data[3] );
 		k_sleep(K_MSEC(servo_timeout));
 	}
 	return 0;

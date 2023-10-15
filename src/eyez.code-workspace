@@ -29,7 +29,8 @@
 			"zephyr.h": "c",
 			"pwm.h": "c",
 			"device.h": "c",
-			"devicetree.h": "c"
+			"devicetree.h": "c",
+			"i2c.h": "c"
 		}
 	}
 }
