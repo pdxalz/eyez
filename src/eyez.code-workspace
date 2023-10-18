@@ -2,22 +2,6 @@
 	"folders": [
 		{
 			"path": ".."
-		},
-		{
-			"name": "chat",
-			"path": "../../chat"
-		},
-		{
-			"name": "servo_motor",
-			"path": "../../servo_motor"
-		},
-		{
-			"name": "led_ws2812",
-			"path": "../../led_ws2812"
-		},
-		{
-			"name": "hello_world",
-			"path": "../../hello_world"
 		}
 	],
 	"settings": {
