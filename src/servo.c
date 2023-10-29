@@ -8,6 +8,7 @@
 #include <math.h>
 #include "servo.h"
 #include "led.h"
+#include "person_sensor.h"
 
 #if 1 // printk info
 #define ZPR printk
@@ -123,11 +124,11 @@ uint16_t lShow2[] = {SEQ_NXTCLR, SEQ_SUB(RL), SEQ_SUB(DOWN), SEQ_SUB(CENTER), SE
 uint16_t lKids[] = {SEQ_MOV(1515), SEQ_DLY(5), SEQ_MOV(1111), SEQ_DLY(5),
                     SEQ_MOV(1515), SEQ_DLY(5), SEQ_MOV(1919), SEQ_DLY(5),
                     SEQ_MOV(1515), SEQ_DLY(5), SEQ_END};
-uint16_t lStagger[] = {SEQ_SPD(20),// SEQ_NXTCLR,
- SEQ_MOV(5151), SEQ_DLY(4), SEQ_DLYS(7), SEQ_MOV(5959),
+uint16_t lStagger[] = {SEQ_SPD(20), // SEQ_NXTCLR,
+                       SEQ_MOV(5151), SEQ_DLY(4), SEQ_DLYS(7), SEQ_MOV(5959),
                        SEQ_DLYR(14), SEQ_MOV(5151), SEQ_DLYS(7), SEQ_MOV(5555), SEQ_END};
 uint16_t lDark[] = {SEQ_SPD(20), SEQ_NXTCLR, SEQ_MOV(5151), SEQ_DLY(4), SEQ_DLYS(7), SEQ_MOV(5959),
-                       SEQ_DLYR(14), SEQ_MOV(5151), SEQ_DLYS(7), SEQ_MOV(5555), SEQ_END};
+                    SEQ_DLYR(14), SEQ_MOV(5151), SEQ_DLYS(7), SEQ_MOV(5555), SEQ_END};
 
 uint16_t *list_sequences[] = {qCenter, qRL, qRoll, qRhythm, qSDown, qCross, qWonky, qRight, qDown, qLeft,
                               s0, s1, s2, s3, s4, s5, s6, s7, s8, s9,
@@ -196,6 +197,7 @@ struct polar_coord
     int16_t num_steps;
 } arcpos;
 
+static bool update_eye_sensor();
 static bool update_linear_move();
 static bool update_arc_move();
 
@@ -270,7 +272,7 @@ void eye_position(enum WhichEye eye, uint8_t pos)
     }
 }
 /*
-float fabs(float a) 
+float fabs(float a)
 {
     return a;
 }
@@ -292,6 +294,9 @@ float atan(float a)
 */
 void servo_update()
 {
+    if (update_eye_sensor())
+        return;
+
     if (update_linear_move())
         return;
 
@@ -357,7 +362,7 @@ void servo_update()
         {
             ZPR("delay stagger\n");
             id = pattern[step] & 0x00ff;
-            k_msleep(id * 100 * WHICH_HEAD+100);
+            k_msleep(id * 100 * WHICH_HEAD + 100);
         }
         else if (pattern[step] >= SEQ_DLYR(0))
         {
@@ -554,6 +559,30 @@ void move_linear(int16_t xA, int16_t yA, int16_t xB, int16_t yB, int16_t steps)
 
     pos.num_steps = (steps == 0) ? default_steps : steps;
     pos.step = 0;
+}
+
+static bool update_eye_sensor()
+{
+    uint32_t p1;
+    uint32_t p2;
+    uint32_t p3;
+    uint32_t p4;
+    uint8_t x;
+    uint8_t y;
+
+    if (!get_person_position(&x, &y))
+        return false;
+
+    p1 = min_pulse + (max_pulse - min_pulse) * x / 100;
+    p2 = min_pulse + (max_pulse - min_pulse) * y / 100;
+    p3 = min_pulse + (max_pulse - min_pulse) * x / 100;
+    p4 = min_pulse + (max_pulse - min_pulse) * y / 100;
+
+    pwm_set_pulse_dt(&servo0, p1);
+    pwm_set_pulse_dt(&servo1, p2);
+    pwm_set_pulse_dt(&servo2, p3);
+    pwm_set_pulse_dt(&servo3, p4);
+    return true;
 }
 
 static bool update_linear_move()

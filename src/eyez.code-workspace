@@ -14,7 +14,11 @@
 			"pwm.h": "c",
 			"device.h": "c",
 			"devicetree.h": "c",
-			"i2c.h": "c"
+			"i2c.h": "c",
+			"led.h": "c",
+			"person_sensor.h": "c",
+			"log.h": "c",
+			"random": "c"
 		}
 	}
 }
