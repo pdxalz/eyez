@@ -34,6 +34,8 @@ void led_init()
         printk("LED strip device %s is not ready", strip->name);
         return;
     }
+            set_color_pattern(8);
+
     printk("Displaying pattern on strip");
     current_pattern = 0;
 }
@@ -78,7 +80,7 @@ const char *color_patterns[] = {
     "rygcbmbcgyr",
     "ooooooooooo",
     "mmmmmmmmmmm",
-    "ccccccccccc",
+    "ccggbbccggb",
     "yyrrooorryy",
     "ppppppppppp",
     "aaaaaaaaaaa",

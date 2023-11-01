@@ -1,6 +1,11 @@
 #ifndef PERSON_SENSOR_H__
 #define LED_H__
 
+
+#define PERSON_ADDR 0x62
+#define DEBUG_REG 0x07
+
+
 // The person sensor will never output more than four faces.
 #define PERSON_SENSOR_MAX_FACES_COUNT (4)
 
